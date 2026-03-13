@@ -1,1 +1,0 @@
-# MCP-MANIM-Presentation
