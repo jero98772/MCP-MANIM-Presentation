@@ -15,6 +15,13 @@ import os
 
 from manim import *
 from manim_slides import Slide
+from manim import Code
+from pygments.styles import get_all_styles
+
+
+SUPPORTED_STYLES = set(get_all_styles())
+DEFAULT_STYLE = "monokai"
+
 
 # ── Палитра ────────────────────────────────────────────────────────────────────
 DARK = "#1A1916"  # Основной текст
@@ -73,15 +80,40 @@ def divider(
     return bar, lbl
 
 
-def code_block(src: str, language: str = "python") -> Code:
+def code_block(
+    src: str,
+    language: str = "python",
+    font_size: int = 16,
+    style: str = DEFAULT_STYLE,
+) -> Code:
+    """
+    Returns a syntax-highlighted Manim Code block.
+
+    Args:
+        src:       Source code string to display.
+        language:  Pygments language alias (e.g. "python", "js", "bash").
+        font_size: Controls size — avoids the clipping caused by .scale().
+        style:     Pygments formatter style. Defaults to "monokai".
+    """
+    # Normalize source: strip outer blank lines, normalize line endings
+    src = src.strip().replace("\r\n", "\n").replace("\r", "\n")
+
+    # Ensure the style exists, fall back gracefully
+    if style not in SUPPORTED_STYLES:
+        print(
+            f"[code_block] Unknown style '{style}', falling back to '{DEFAULT_STYLE}'"
+        )
+        style = DEFAULT_STYLE
+
     return Code(
         code_string=src,
         language=language,
-        formatter_style="friendly",
+        formatter_style=style,
         background="window",
         background_config={"fill_color": "#2b2b2b"},
         add_line_numbers=False,
-    ).scale(0.85)
+        tab_width=4,
+    )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -570,40 +602,57 @@ class MCPPresentation(Slide):
     # ══════════════════════════════════════════════════════════════════════════
     # СЛАЙД — Как агент использует инструмент
     # ══════════════════════════════════════════════════════════════════════════
-    def _slide_langchain_tool_flow(self):
+def _slide_langchain_tool_flow(self):
         anchor = self._header("Как агент использует инструмент")
-
+        # ── Левая колонка: Схема + Вызов (стопкой) ──────────────────────────
         schema_src = (
             "{\n"
             '  "name": "count_letter",\n'
-            '  "description": "Подсчитать вхождения буквы.",\n'
+            '  "description": "описание",\n'
             '  "parameters": {\n'
             '    "text":   "string",\n'
             '    "letter": "string"\n'
             "  }\n"
             "}"
         )
-        schema_label = B("Схема, которую видит LLM", color=SEC, weight=BOLD, scale=0.48)
-        cblock_schema = code_block(schema_src, language="json").scale(0.72)
-        col_schema = (
-            VGroup(schema_label, cblock_schema)
-            .arrange(DOWN, aligned_edge=LEFT, buff=0.12)
-            .to_edge(LEFT, buff=0.45)
-            .shift(DOWN * 0.2)
+        invoke_src = (
+            "result = count_letter.invoke({\n"
+            '    "text":   "strawberry",\n'
+            '    "letter": "r",\n'
+            "})\n"
+            "print(result)  # -> 3"
         )
-
+        schema_label = B("Схема, которую видит LLM", color=SEC, weight=BOLD, scale=0.40)
+        cblock_schema = code_block(schema_src, language="json", font_size=8)
+        col_schema = VGroup(schema_label, cblock_schema).arrange(
+            DOWN, aligned_edge=LEFT, buff=0.10
+        )
+        invoke_label = B("Ручной вызов", color=SEC, weight=BOLD, scale=0.40)
+        cblock_invoke = code_block(invoke_src, font_size=8)
+        col_invoke = VGroup(invoke_label, cblock_invoke).arrange(
+            DOWN, aligned_edge=LEFT, buff=0.10
+        )
+        col_left = (
+            VGroup(col_schema, col_invoke)
+            .arrange(DOWN, aligned_edge=LEFT, buff=0.30)
+            .to_edge(LEFT, buff=0.45)
+            .to_edge(UP, buff=1.3)  # прикрепить к верху, чтобы не смещалось в колонку потока
+        )
+        # ── Правая колонка: Шаги потока ──────────────────────────────────────
         flow_steps = [
-            (DARK, 'Пользователь:   Сколько "r" в слове strawberry?'),
+            (DARK, 'Пользователь:   Сколько букв "r" в слове strawberry?'),
             (TERT, "LLM читает схему → выбирает count_letter"),
             (CRAIL, 'Вызов:  count_letter(text="strawberry", letter="r")'),
             (TERT, "Инструмент возвращает:  3"),
-            (CRAIL, 'Ответ:  В слове "strawberry" 3 буквы "r".'),
+            (CRAIL, 'Ответ:  В слове "strawberry" содержится 3 буквы "r".'),
         ]
-
-        step_mobs = [B(text, color=color, scale=0.48) for color, text in flow_steps]
-        flow_group = VGroup(*step_mobs).arrange(DOWN, aligned_edge=LEFT, buff=0.32)
-        flow_group.to_edge(RIGHT, buff=0.45).shift(DOWN * 0.2)
-
+        step_mobs = [B(text, color=color, scale=0.40) for color, text in flow_steps]
+        flow_group = (
+            VGroup(*step_mobs)
+            .arrange(DOWN, aligned_edge=LEFT, buff=0.28)
+            .to_edge(RIGHT, buff=0.45)
+            .align_to(col_left, UP)  # выровнять по верху с левой колонкой
+        )
         arrows = [
             Arrow(
                 step_mobs[i].get_bottom(),
@@ -615,23 +664,7 @@ class MCPPresentation(Slide):
             )
             for i in range(len(step_mobs) - 1)
         ]
-
-        invoke_src = (
-            "result = count_letter.invoke({\n"
-            '    "text":   "strawberry",\n'
-            '    "letter": "r",\n'
-            "})\n"
-            "print(result)  # -> 3"
-        )
-        invoke_label = B("Ручной вызов", color=SEC, weight=BOLD, scale=0.48)
-        cblock_invoke = code_block(invoke_src).scale(0.72)
-        col_invoke = (
-            VGroup(invoke_label, cblock_invoke)
-            .arrange(DOWN, aligned_edge=LEFT, buff=0.10)
-            .next_to(col_schema, DOWN, buff=0.28)
-            .align_to(col_schema, LEFT)
-        )
-
+        # ── Анимации ──────────────────────────────────────────────────────────
         self.play(FadeIn(col_schema))
         self.next_slide()
         self.play(FadeIn(step_mobs[0]))
@@ -641,7 +674,7 @@ class MCPPresentation(Slide):
         self.play(FadeIn(col_invoke))
         self.next_slide()
         self._clear()
-
+        
     # ══════════════════════════════════════════════════════════════════════════
     # СЛАЙД  — MCP против CLI
     # ══════════════════════════════════════════════════════════════════════════

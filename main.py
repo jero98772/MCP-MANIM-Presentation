@@ -73,15 +73,47 @@ def divider(
     return bar, lbl
 
 
-def code_block(src: str, language: str = "python") -> Code:
+from manim import Code
+from pygments.styles import get_all_styles
+
+SUPPORTED_STYLES = set(get_all_styles())
+DEFAULT_STYLE = "monokai"
+
+
+def code_block(
+    src: str,
+    language: str = "python",
+    font_size: int = 16,
+    style: str = DEFAULT_STYLE,
+) -> Code:
+    """
+    Returns a syntax-highlighted Manim Code block.
+
+    Args:
+        src:       Source code string to display.
+        language:  Pygments language alias (e.g. "python", "js", "bash").
+        font_size: Controls size — avoids the clipping caused by .scale().
+        style:     Pygments formatter style. Defaults to "monokai".
+    """
+    # Normalize source: strip outer blank lines, normalize line endings
+    src = src.strip().replace("\r\n", "\n").replace("\r", "\n")
+
+    # Ensure the style exists, fall back gracefully
+    if style not in SUPPORTED_STYLES:
+        print(
+            f"[code_block] Unknown style '{style}', falling back to '{DEFAULT_STYLE}'"
+        )
+        style = DEFAULT_STYLE
+
     return Code(
         code_string=src,
         language=language,
-        formatter_style="friendly",
+        formatter_style=style,
         background="window",
         background_config={"fill_color": "#2b2b2b"},
         add_line_numbers=False,
-    ).scale(0.85)
+        tab_width=4,
+    )
 
 
 # ══════════════════════════════════════════════════════════════════════════════
@@ -160,7 +192,7 @@ class MCPPresentation(Slide):
             role_mobs.append(m)
             prev = m
         # ── Flag row ───────────────────────────────────────────────────────────
-        flags = B("🇨🇴 50%   🇩🇪 25%   🇷🇺/🇺🇦 25%", color=DARK, scale=0.52)
+        flags = B("Col 50%   De 25%   Ru/Ua 25%", color=DARK, scale=0.52)
         flags.next_to(role_mobs[-1], DOWN, buff=0.18)
         flags.set_x(0)
         # ── Speaker badges ────────────────────────────────────────────────────
@@ -566,28 +598,49 @@ class MCPPresentation(Slide):
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE — How the Agent Uses the Tool
     # ══════════════════════════════════════════════════════════════════════════
+
     def _slide_langchain_tool_flow(self):
         anchor = self._header("How the Agent Uses the Tool")
 
+        # ── Left col: Schema + Invoke stacked ───────────────────────────────
         schema_src = (
             "{\n"
             '  "name": "count_letter",\n'
-            '  "description": "Count letter occurrences.",\n'
+            '  "description": "description",\n'
             '  "parameters": {\n'
             '    "text":   "string",\n'
             '    "letter": "string"\n'
             "  }\n"
             "}"
         )
-        schema_label = B("Schema the LLM sees", color=SEC, weight=BOLD, scale=0.48)
-        cblock_schema = code_block(schema_src, language="json").scale(0.72)
-        col_schema = (
-            VGroup(schema_label, cblock_schema)
-            .arrange(DOWN, aligned_edge=LEFT, buff=0.12)
-            .to_edge(LEFT, buff=0.45)
-            .shift(DOWN * 0.2)
+        invoke_src = (
+            "result = count_letter.invoke({\n"
+            '    "text":   "strawberry",\n'
+            '    "letter": "r",\n'
+            "})\n"
+            "print(result)  # -> 3"
         )
 
+        schema_label = B("Schema the LLM sees", color=SEC, weight=BOLD, scale=0.40)
+        cblock_schema = code_block(schema_src, language="json", font_size=8)
+        col_schema = VGroup(schema_label, cblock_schema).arrange(
+            DOWN, aligned_edge=LEFT, buff=0.10
+        )
+
+        invoke_label = B("Manual invocation", color=SEC, weight=BOLD, scale=0.40)
+        cblock_invoke = code_block(invoke_src, font_size=8)
+        col_invoke = VGroup(invoke_label, cblock_invoke).arrange(
+            DOWN, aligned_edge=LEFT, buff=0.10
+        )
+
+        col_left = (
+            VGroup(col_schema, col_invoke)
+            .arrange(DOWN, aligned_edge=LEFT, buff=0.30)
+            .to_edge(LEFT, buff=0.45)
+            .to_edge(UP, buff=1.3)  # pin to top so it can't drift into flow column
+        )
+
+        # ── Right col: Flow steps ────────────────────────────────────────────
         flow_steps = [
             (DARK, 'User:   How many "r" in strawberry?'),
             (TERT, "LLM reads schema → selects count_letter"),
@@ -595,10 +648,13 @@ class MCPPresentation(Slide):
             (TERT, "Tool returns:  3"),
             (CRAIL, 'Response:  There are 3 "r" letters in "strawberry".'),
         ]
-
-        step_mobs = [B(text, color=color, scale=0.48) for color, text in flow_steps]
-        flow_group = VGroup(*step_mobs).arrange(DOWN, aligned_edge=LEFT, buff=0.32)
-        flow_group.to_edge(RIGHT, buff=0.45).shift(DOWN * 0.2)
+        step_mobs = [B(text, color=color, scale=0.40) for color, text in flow_steps]
+        flow_group = (
+            VGroup(*step_mobs)
+            .arrange(DOWN, aligned_edge=LEFT, buff=0.28)
+            .to_edge(RIGHT, buff=0.45)
+            .align_to(col_left, UP)  # top-align with left column
+        )
 
         arrows = [
             Arrow(
@@ -612,28 +668,15 @@ class MCPPresentation(Slide):
             for i in range(len(step_mobs) - 1)
         ]
 
-        invoke_src = (
-            "result = count_letter.invoke({\n"
-            '    "text":   "strawberry",\n'
-            '    "letter": "r",\n'
-            "})\n"
-            "print(result)  # -> 3"
-        )
-        invoke_label = B("Manual invocation", color=SEC, weight=BOLD, scale=0.48)
-        cblock_invoke = code_block(invoke_src).scale(0.72)
-        col_invoke = (
-            VGroup(invoke_label, cblock_invoke)
-            .arrange(DOWN, aligned_edge=LEFT, buff=0.10)
-            .next_to(col_schema, DOWN, buff=0.28)
-            .align_to(col_schema, LEFT)
-        )
-
+        # ── Animations ───────────────────────────────────────────────────────
         self.play(FadeIn(col_schema))
         self.next_slide()
+
         self.play(FadeIn(step_mobs[0]))
         for i, arr in enumerate(arrows):
             self.play(GrowArrow(arr), FadeIn(step_mobs[i + 1]), run_time=0.5)
         self.next_slide()
+
         self.play(FadeIn(col_invoke))
         self.next_slide()
         self._clear()
