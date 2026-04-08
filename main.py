@@ -14,7 +14,9 @@ from __future__ import annotations
 import os
 
 from manim import *
+from manim import Code
 from manim_slides import Slide
+from pygments.styles import get_all_styles
 
 # ── Palette ────────────────────────────────────────────────────────────────────
 DARK = "#1A1916"  # Primary text
@@ -33,7 +35,8 @@ ORANGE = CRAIL
 MUTED = SEC
 
 # ── Tiny helpers ───────────────────────────────────────────────────────────────
-
+SUPPORTED_STYLES = set(get_all_styles())
+DEFAULT_STYLE = "monokai"
 
 def H(text: str, scale: float = 1.0, color: str = DARK, **kw) -> Text:
     return Text(text, color=color, weight=BOLD, **kw).scale(scale)
@@ -71,13 +74,6 @@ def divider(
         bar, DOWN, buff=0.14
     )
     return bar, lbl
-
-
-from manim import Code
-from pygments.styles import get_all_styles
-
-SUPPORTED_STYLES = set(get_all_styles())
-DEFAULT_STYLE = "monokai"
 
 
 def code_block(
@@ -128,6 +124,7 @@ class MCPPresentation(Slide):
         self._slide_about_me()
         self._slide_what_is_mcp()
         self._slide_mcp_engine()
+        self._slide_mcp_adopters()
         self._slide_why_tools()
         self._slide_strawberry()
         self._slide_langchain_tool_intro()
@@ -356,8 +353,113 @@ class MCPPresentation(Slide):
         self.next_slide()
         self._clear()
 
+
     # ══════════════════════════════════════════════════════════════════════════
-    # SLIDE 5 — Why Tools? + meme
+    # SLIDE  — MCP adopters
+    # ═════════════════════════════════════════════
+
+
+    def _slide_mcp_adopters(self):
+        anchor = self._header("Who Is Using MCP?")
+
+        # ── Headline ────────────────────────────────────────────────────────────
+        row1_data = [
+            ("Leading companies & projects", DARK),
+        ]
+        row2_data = [
+            ("adopt", CRAIL),
+            ("  MCP to  ", DARK),
+            ("standardise", SEC),
+            ("  how their  ", DARK),
+            ("AI connects", TERT),
+        ]
+
+        row1 = VGroup(
+            *[
+                B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.62)
+                for w, c in row1_data
+            ]
+        ).arrange(RIGHT, buff=0.12)
+        row2 = VGroup(
+            *[
+                B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.62)
+                for w, c in row2_data
+            ]
+        ).arrange(RIGHT, buff=0.12)
+
+        headline = (
+            VGroup(row1, row2).arrange(DOWN, buff=0.15).next_to(anchor, DOWN, buff=0.4)
+        )
+        headline.set_x(0)
+        parts = [*row1, *row2]
+
+        # ── Company / project data ───────────────────────────────────────────────
+        companies = [
+            ("c1.jpg", "GitHub",   "",     CRAIL),
+            ("c2.png", "Canva",    "",     SEC),
+            ("c3.jpg", "Figma",    "",   TERT),
+            ("c4.png", "Blender",  "",         CLOUDY),
+            ("c5.png", "Ghidra",   "",   DARK),
+        ]
+
+        IMG_W, IMG_H = 1.0, 1.0   # image bounding box
+        CARD_W, CARD_H = 1.9, 2.4
+        CARD_BUFF = 0.28
+
+        cards = Group()
+        for img_file, name, desc, accent in companies:
+            # background rounded rect
+            bg = RoundedRectangle(
+                corner_radius=0.18,
+                width=CARD_W,
+                height=CARD_H,
+                fill_color=DARK,
+                fill_opacity=1,
+                stroke_color=accent,
+                stroke_width=2.5,
+            )
+
+            logo = (
+                ImageMobject(img_file)
+                .set_resampling_algorithm(RESAMPLING_ALGORITHMS["nearest"])
+                .set_width(IMG_W)
+            )
+            if logo.get_height() > IMG_H:
+                logo.scale_to_fit_height(IMG_H)
+
+            name_label = B(name,  color=accent, weight=BOLD, scale=0.52)
+            desc_label  = B(desc,  color=DARK,  weight=NORMAL, scale=0.38)
+
+            content = Group(logo, name_label, desc_label).arrange(DOWN, buff=0.18)
+            content.move_to(bg.get_center())
+
+            card = Group(bg, content)
+            cards.add(card)
+
+        cards.arrange(RIGHT, buff=CARD_BUFF).next_to(headline, DOWN, buff=0.55)
+        cards.set_x(0)
+
+        # ── Footer note ─────────────────────────────────────────────────────────
+        note = B(
+            "MCP is rapidly becoming the universal plug-in standard for AI-powered applications",
+            color=SEC,
+            scale=0.44,
+        ).next_to(cards, DOWN, buff=0.45)
+        note.set_x(0)
+
+        # ── Animations ───────────────────────────────────────────────────────────
+        self.play(LaggedStart(*[Write(p) for p in parts], lag_ratio=0.06))
+        self.play(
+            LaggedStart(
+                *[FadeIn(card, shift=UP * 0.25) for card in cards],
+                lag_ratio=0.12,
+            )
+        )
+        self.play(FadeIn(note))
+        self.next_slide()
+        self._clear()
+    # ══════════════════════════════════════════════════════════════════════════
+    # SLIDE  — Why Tools? + meme
     # ══════════════════════════════════════════════════════════════════════════
     def _slide_why_tools(self):
         anchor = self._header("Why Tools? — The Next-Token Problem")
