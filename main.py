@@ -129,7 +129,8 @@ class MCPPresentation(Slide):
         self._slide_strawberry()
         self._slide_ai_imo_win()
         self._slide_prompt_injection()
-        self._slide_ace_prevention()
+        self._slide_ace_layers()
+        self._slide_ace_platforms()
         self._slide_langchain_tool_intro()
         self._slide_langchain_tool_flow()
         self._slide_tools_problems()
@@ -810,130 +811,133 @@ class MCPPresentation(Slide):
         self.next_slide()
         self._clear()
 
-def _slide_ace_layers(self):
-    anchor = self._header("Arbitrary Code Execution — Defence Layers")
+    def _slide_ace_layers(self):
+        anchor = self._header("Arbitrary Code Execution — Defence Layers")
 
-    # ── intro line ────────────────────────────────────────────────────────
-    intro = B(
-        "Running untrusted code safely requires stacking multiple isolation primitives.",
-        color=SEC,
-        scale=0.50,
-    )
-    intro.next_to(anchor, DOWN, buff=0.30)
-    intro.set_x(0)
-    self.play(FadeIn(intro, shift=UP * 0.1))
-
-    # ── layer rows: icon-like pill + description ──────────────────────────
-    layer_data = [
-        (CRAIL,  "Namespaces / cgroups",   "Isolate PID, network, FS and cap CPU + RAM per process"),
-        (CRAIL,  "seccomp filter",          "Whitelist only safe syscalls — block fork, execve, socket"),
-        (DARK,   "Network = none",          "Firewall or network namespace with zero egress"),
-        (DARK,   "Wall + CPU time limits",  "Kill runaway processes via RLIMIT_CPU + external watchdog"),
-        (SEC,    "Read-only filesystem",    "tmpfs for output only — source tree is immutable"),
-    ]
-
-    rows = []
-    prev = intro
-    for color, label, desc in layer_data:
-        p = pill(label, color, w=3.0, h=0.60)
-        d = B(desc, color=SEC, scale=0.44)
-        row = VGroup(p, d).arrange(RIGHT, buff=0.30)
-        row.next_to(prev, DOWN, buff=0.22)
-        row.set_x(0.6)          # slight right offset so pills feel left-anchored
-        rows.append(row)
-        prev = row
-
-    self.play(
-        LaggedStart(
-            *[
-                AnimationGroup(DrawBorderThenFill(r[0]), FadeIn(r[1], shift=RIGHT * 0.1))
-                for r in rows
-            ],
-            lag_ratio=0.25,
+        intro = B(
+            "Running untrusted code safely requires stacking multiple isolation primitives.",
+            color=SEC,
+            scale=0.50,
         )
-    )
+        intro.next_to(anchor, DOWN, buff=0.30)
+        intro.set_x(0)
+        self.play(FadeIn(intro, shift=UP * 0.1))
 
-    # ── footnote ─────────────────────────────────────────────────────────
-    note = B(
-        "No single layer is enough — safety comes from depth.",
-        color=CLOUDY,
-        scale=0.42,
-    ).to_edge(DOWN, buff=0.20)
-    self.play(FadeIn(note))
+        layer_data = [
+            (CRAIL, "Namespaces / cgroups",  "Isolate PID, network, FS "),
+            (CRAIL, "seccomp filter",        "Whitelist safe syscalls, block fork, execve, socket"),
+            (DARK,  "Network = none",        "Network namespace with zero egress, no DNS"),
+            (DARK,  "CPU + Wall limits",     "external watchdog kills runaway processes"),
+        ]
 
-    self.next_slide()
-    self._clear()
+        PILL_X   = -3.8   # horizontal center of all pills
+        PILL_W   =  5.6   # wide enough for longest label
+        PILL_H   =  0.64  # tall enough to breathe
+        DESC_X   =  0.8   # left-edge anchor for descriptions
+        ROW_BUFF =  0.62  # vertical gap — more space between rows
 
+        rows = []
+        for i, (color, label, desc) in enumerate(layer_data):
+            p = pill(label, color, w=PILL_W, h=PILL_H)
+            p.set_x(PILL_X)
 
-def _slide_ace_platforms(self):
-    anchor = self._header("Arbitrary Code Execution — How Platforms Do It")
+            d = B(desc, color=SEC, scale=0.40)
+            d.set_x(DESC_X + d.width / 2)
 
-    # ── platform comparison (left) ────────────────────────────────────────
-    plat_title = B("Real-world implementations", color=CRAIL, weight=BOLD, scale=0.52)
-    plat_title.next_to(anchor, DOWN, buff=0.35)
-    plat_title.to_edge(LEFT, buff=0.55)
+            y = intro.get_bottom()[1] - 0.45 - i * ROW_BUFF
+            p.set_y(y)
+            d.set_y(y)
+            rows.append((p, d))
 
-    platforms = [
-        (CRAIL, "Codeforces", "isolate + ptrace syscall allow-list"),
-        (CRAIL, "Replit",     "gVisor (runsc) + Nix per-repl envs"),
-        (DARK,  "AWS Lambda", "Firecracker microVM — ~125 ms boot"),
-        (DARK,  "IOI Judge",  "isolate — open-source, battle-tested"),
-    ]
-
-    plat_rows = []
-    prev = plat_title
-    for color, name, detail in platforms:
-        name_mob   = B(name,   color=color, weight=BOLD, scale=0.50)
-        detail_mob = B(detail, color=SEC,               scale=0.46)
-        row = VGroup(name_mob, detail_mob).arrange(RIGHT, buff=0.22)
-        row.next_to(prev, DOWN, buff=0.22, aligned_edge=LEFT)
-        plat_rows.append(row)
-        prev = row
-
-    self.play(FadeIn(plat_title))
-    self.play(
-        LaggedStart(
-            *[FadeIn(r, shift=RIGHT * 0.12) for r in plat_rows],
-            lag_ratio=0.22,
+        self.play(
+            LaggedStart(
+                *[
+                    AnimationGroup(DrawBorderThenFill(p), FadeIn(d, shift=RIGHT * 0.1))
+                    for p, d in rows
+                ],
+                lag_ratio=0.25,
+            )
         )
-    )
-    self.next_slide()
 
-    # ── vertical separator ────────────────────────────────────────────────
-    sep = Line(UP * 1.6, DOWN * 1.9, color=CLOUDY, stroke_width=1).set_x(0.55)
-    self.play(Create(sep))
+        note = B(
+            "No single layer is enough — safety comes from depth.",
+            color=CLOUDY,
+            scale=0.42,
+        ).to_edge(DOWN, buff=0.20)
+        self.play(FadeIn(note))
 
-    # ── docker code block (right) ─────────────────────────────────────────
-    docker_src = """\
-docker run --rm         \\
-  --network none        \\
-  --memory 256m         \\
-  --cpus 0.5            \\
-  --cap-drop ALL        \\
-  --read-only           \\
-  --security-opt no-new-privileges \\
-  sandbox:latest"""
+        self.next_slide()
+        self._clear()
 
-    cb = code_block(docker_src, language="bash", font_size=13)
-    cb_label = B("Minimal hardened container", color=CRAIL, weight=BOLD, scale=0.46)
+    def _slide_ace_platforms(self):
+        anchor = self._header("Arbitrary Code Execution — How Platforms Do It")
 
-    code_group = VGroup(cb_label, cb).arrange(DOWN, aligned_edge=LEFT, buff=0.14)
-    code_group.next_to(sep, RIGHT, buff=0.35)
-    code_group.set_y(-0.2)
+        # ── platform comparison (left) ────────────────────────────────────────
+        plat_title = B("Real-world implementations", color=CRAIL, weight=BOLD, scale=0.52)
+        plat_title.next_to(anchor, DOWN, buff=0.35)
+        plat_title.to_edge(LEFT, buff=0.55)
 
-    self.play(FadeIn(code_group, shift=UP * 0.18))
+        platforms = [
+            (CRAIL, "Codeforces", "isolate + ptrace syscall allow-list"),
+            (CRAIL, "Replit",     "gVisor (runsc) + Nix per-repl envs"),
+            (DARK,  "AWS Lambda", "Firecracker microVM — ~125 ms boot"),
+            (DARK,  "IOI Judge",  "isolate — open-source, battle-tested"),
+        ]
 
-    # ── bottom footnote ───────────────────────────────────────────────────
-    note = B(
-        "isolate (github.com/ioi/isolate) is the reference implementation — used at IOI and Codeforces.",
-        color=CLOUDY,
-        scale=0.40,
-    ).to_edge(DOWN, buff=0.20)
-    self.play(FadeIn(note))
+        plat_rows = []
+        prev = plat_title
+        for color, name, detail in platforms:
+            name_mob   = B(name,   color=color, weight=BOLD, scale=0.50)
+            detail_mob = B(detail, color=SEC,               scale=0.46)
+            row = VGroup(name_mob, detail_mob).arrange(RIGHT, buff=0.22)
+            row.next_to(prev, DOWN, buff=0.22, aligned_edge=LEFT)
+            plat_rows.append(row)
+            prev = row
 
-    self.next_slide()
-    self._clear()
-    
+        self.play(FadeIn(plat_title))
+        self.play(
+            LaggedStart(
+                *[FadeIn(r, shift=RIGHT * 0.12) for r in plat_rows],
+                lag_ratio=0.22,
+            )
+        )
+        self.next_slide()
+
+        # ── vertical separator ────────────────────────────────────────────────
+        sep = Line(UP * 1.6, DOWN * 1.9, color=CLOUDY, stroke_width=1).set_x(0.55)
+        self.play(Create(sep))
+
+        # ── docker code block (right) ─────────────────────────────────────────
+        docker_src = """\
+    docker run --rm         \\
+      --network none        \\
+      --memory 256m         \\
+      --cpus 0.5            \\
+      --cap-drop ALL        \\
+      --read-only           \\
+      --security-opt no-new-privileges \\
+      sandbox:latest"""
+
+        cb = code_block(docker_src, language="bash", font_size=13)
+        cb_label = B("Minimal hardened container", color=CRAIL, weight=BOLD, scale=0.46)
+
+        code_group = VGroup(cb_label, cb).arrange(DOWN, aligned_edge=LEFT, buff=0.14)
+        code_group.next_to(sep, RIGHT, buff=0.35)
+        code_group.set_y(-0.2)
+
+        self.play(FadeIn(code_group, shift=UP * 0.18))
+
+        # ── bottom footnote ───────────────────────────────────────────────────
+        note = B(
+            "isolate (github.com/ioi/isolate) is the reference implementation — used at IOI and Codeforces.",
+            color=CLOUDY,
+            scale=0.40,
+        ).to_edge(DOWN, buff=0.20)
+        self.play(FadeIn(note))
+
+        self.next_slide()
+        self._clear()
+
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE — From Python Function to LangChain Tool
     # ══════════════════════════════════════════════════════════════════════════
