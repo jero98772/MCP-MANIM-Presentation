@@ -134,8 +134,10 @@ class MCPPresentation(Slide):
         self._slide_langchain_tool_intro()
         self._slide_langchain_tool_flow()
         self._slide_tools_problems()
+        #mcp is dead
         self._slide_mcp_vs_cli()
         self._slide_wolfram()
+        #where to find mcps?
         self._slide_network_protocol()
         self._slide_connect()
         self._slide_conclusions()
@@ -872,10 +874,10 @@ class MCPPresentation(Slide):
     def _slide_ace_platforms(self):
         anchor = self._header("Arbitrary Code Execution — How Platforms Do It")
 
-        # ── platform comparison (left) ────────────────────────────────────────
+        # ── platform comparison (top) ─────────────────────────────────────────
         plat_title = B("Real-world implementations", color=CRAIL, weight=BOLD, scale=0.52)
         plat_title.next_to(anchor, DOWN, buff=0.35)
-        plat_title.to_edge(LEFT, buff=0.55)
+        plat_title.set_x(0)
 
         platforms = [
             (CRAIL, "Codeforces", "isolate + ptrace syscall allow-list"),
@@ -884,30 +886,36 @@ class MCPPresentation(Slide):
             (DARK,  "IOI Judge",  "isolate — open-source, battle-tested"),
         ]
 
+        NAME_X   = -4.2   # left-anchor for platform names
+        DETAIL_X = -0.01   # left-anchor for detail descriptions
+        ROW_BUFF =  0.48
+
         plat_rows = []
-        prev = plat_title
-        for color, name, detail in platforms:
+        for i, (color, name, detail) in enumerate(platforms):
             name_mob   = B(name,   color=color, weight=BOLD, scale=0.50)
             detail_mob = B(detail, color=SEC,               scale=0.46)
-            row = VGroup(name_mob, detail_mob).arrange(RIGHT, buff=0.22)
-            row.next_to(prev, DOWN, buff=0.22, aligned_edge=LEFT)
-            plat_rows.append(row)
-            prev = row
+
+            name_mob.set_x(NAME_X + name_mob.width / 2)
+            detail_mob.set_x(DETAIL_X + detail_mob.width / 2)
+
+            y = plat_title.get_bottom()[1] - 0.35 - i * ROW_BUFF
+            name_mob.set_y(y)
+            detail_mob.set_y(y)
+            plat_rows.append((name_mob, detail_mob))
 
         self.play(FadeIn(plat_title))
         self.play(
             LaggedStart(
-                *[FadeIn(r, shift=RIGHT * 0.12) for r in plat_rows],
+                *[
+                    AnimationGroup(FadeIn(n, shift=RIGHT * 0.12), FadeIn(d, shift=RIGHT * 0.12))
+                    for n, d in plat_rows
+                ],
                 lag_ratio=0.22,
             )
         )
         self.next_slide()
 
-        # ── vertical separator ────────────────────────────────────────────────
-        sep = Line(UP * 1.6, DOWN * 1.9, color=CLOUDY, stroke_width=1).set_x(0.55)
-        self.play(Create(sep))
-
-        # ── docker code block (right) ─────────────────────────────────────────
+        # ── docker code block (bottom) ────────────────────────────────────────
         docker_src = """\
     docker run --rm         \\
       --network none        \\
@@ -920,19 +928,18 @@ class MCPPresentation(Slide):
 
         cb = code_block(docker_src, language="bash", font_size=13)
         cb_label = B("Minimal hardened container", color=CRAIL, weight=BOLD, scale=0.46)
-
         code_group = VGroup(cb_label, cb).arrange(DOWN, aligned_edge=LEFT, buff=0.14)
-        code_group.next_to(sep, RIGHT, buff=0.35)
-        code_group.set_y(-0.2)
+        code_group.to_edge(DOWN, buff=0.55)
+        code_group.set_x(0)
 
         self.play(FadeIn(code_group, shift=UP * 0.18))
 
         # ── bottom footnote ───────────────────────────────────────────────────
         note = B(
-            "isolate (github.com/ioi/isolate) is the reference implementation — used at IOI and Codeforces.",
+            "isolate (github.com/ioi/isolate) — reference sandbox used at IOI and Codeforces.",
             color=CLOUDY,
             scale=0.40,
-        ).to_edge(DOWN, buff=0.20)
+        ).to_edge(DOWN, buff=0.18)
         self.play(FadeIn(note))
 
         self.next_slide()
