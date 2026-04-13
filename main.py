@@ -134,11 +134,16 @@ class MCPPresentation(Slide):
         self._slide_langchain_tool_intro()
         self._slide_langchain_tool_flow()
         self._slide_tools_problems()
-        #mcp is dead
+        self._slide_is_mcp_dead()
+        self._slide_missinformation()
+        self._slide_mcp_vs_skills()
         self._slide_mcp_vs_cli()
-        self._slide_wolfram()
-        #where to find mcps?
+        self._slide_wolfram()       
+        self._mcp_websites()
         self._slide_network_protocol()
+        self._slide_network_protocol_mcp()
+        self._slide_mcp_flow()
+        #animation
         self._slide_connect()
         self._slide_conclusions()
         self._slide_thanks()
@@ -1095,10 +1100,138 @@ class MCPPresentation(Slide):
         self.play(FadeIn(col_invoke))
         self.next_slide()
         self._clear()
+    def _slide_is_mcp_dead(self):
+        anchor = self._header("Is MCP Dead?")
 
+        images_grid = [
+            ["5.jpg", "7.jpg"],
+            ["8.jpg", "9.png"],
+        ]
+
+        IMG_W    = 4.8   # width of each image
+        H_GAP    = 0.30  # horizontal gap between columns
+        V_GAP    = 0.25  # vertical gap between rows
+
+        grid_mobs = []
+        for r, row in enumerate(images_grid):
+            for c, path in enumerate(row):
+                if os.path.exists("memes/"+path):
+                    img = ImageMobject("memes/"+path).scale_to_fit_width(IMG_W)
+                else:
+                    # fallback placeholder if file missing
+                    img = Rectangle(
+                        width=IMG_W, height=IMG_W * 0.6,
+                        fill_color=CLOUDY, fill_opacity=0.2,
+                        stroke_color=CLOUDY, stroke_width=1,
+                    )
+                    lbl = B(path, color=SEC, scale=0.45).move_to(img)
+                    img = Group(img, lbl)
+
+                x = (c - 0.5) * (IMG_W + H_GAP)
+                y = anchor.get_bottom()[1] - 0.25 - (IMG_W * 0.6 + V_GAP) * r - (IMG_W * 0.6) / 2
+                img.set_x(x)
+                img.set_y(y)
+                grid_mobs.append(img)
+
+        self.play(
+            LaggedStart(
+                *[FadeIn(m, shift=UP * 0.15) for m in grid_mobs],
+                lag_ratio=0.20,
+            )
+        )
+
+        self.next_slide()
+        self._clear()
+    def _slide_missinformation(self):
+        anchor = self._header("Внимание! Внимание!")
+
+        img_path = "memes/missinformation.jpg"
+        if os.path.exists(img_path):
+            img = (
+                ImageMobject(img_path)
+                .scale_to_fit_width(10)
+                .next_to(anchor, DOWN, buff=0.25)
+            )
+            self.play(FadeIn(img))
+        else:
+            self._draw_protocol_stack(anchor)
+
+        self.next_slide()
+        self._clear()
     # ══════════════════════════════════════════════════════════════════════════
-    # SLIDE  — MCP vs CLI
+    # SLIDE  — MCP vs CLI vs Skills
     # ══════════════════════════════════════════════════════════════════════════
+    def _slide_mcp_vs_skills(self):
+        anchor = self._header("MCP vs Skills — What's the Difference?")
+
+        skills_items = [
+            "Natural-language instructions & workflows",
+            "Teach how and when to do a task",
+            "Enforce consistency, reduce hallucinations",
+            "Live locally alongside the agent",
+            "No network — pure guidance",
+        ]
+        mcp_items = [
+            "Protocol: agent ↔ external tool/service",
+            "Handles OAuth, auth, live API calls",
+            "Real-time data access & live actions",
+            "Runs in a controlled remote environment",
+            "Gives the agent hands to touch the world",
+        ]
+
+        head_skills = B("Skills", color=CLOUDY, weight=BOLD, scale=0.65).shift(
+            LEFT * 5.9 + UP * 1.5
+        )
+        head_mcp = B("MCP Servers", color=CRAIL, weight=BOLD, scale=0.65).shift(
+            RIGHT * 2.2 + UP * 1.5
+        )
+        #divline = DashedLine(UP * 1.7, DOWN * 2.7, color=TERT, stroke_width=1.5)
+
+        skills_mobs = (
+            VGroup(*[B(f"—  {p}", color=SEC, scale=0.40) for p in skills_items])
+            .arrange(DOWN, aligned_edge=LEFT, buff=0.22)
+            .next_to(head_skills, DOWN, buff=0.3)
+            .align_to(head_skills, LEFT)
+        )
+
+        mcp_mobs = (
+            VGroup(*[B(f"—  {p}", color=CRAIL, scale=0.40) for p in mcp_items])
+            .arrange(DOWN, aligned_edge=LEFT, buff=0.22)
+            .next_to(head_mcp, DOWN, buff=0.3)
+            .align_to(head_mcp, LEFT)
+        )
+
+        # ── bottom summary pill ───────────────────────────────────────────────
+        summary = B(
+            "Skills  =  what to think       MCP  =  what to do",
+            color=DARK,
+            weight=BOLD,
+            scale=0.48,
+        )
+        summary_box = SurroundingRectangle(
+            summary,
+            corner_radius=0.12,
+            buff=0.18,
+            color=CLOUDY,
+            stroke_width=1.2,
+            fill_color=PAMPAS,
+            fill_opacity=0.6,
+        )
+        summary_group = VGroup(summary_box, summary).to_edge(DOWN, buff=0.28)
+
+        self.play(FadeIn(head_skills), FadeIn(head_mcp))#, Create(divline))
+        self.play(
+            LaggedStart(
+                *[FadeIn(m, shift=RIGHT * 0.15) for m in skills_mobs], lag_ratio=0.18
+            ),
+            LaggedStart(
+                *[FadeIn(m, shift=LEFT * 0.15) for m in mcp_mobs], lag_ratio=0.18
+            ),
+        )
+        self.next_slide()
+        self.play(FadeIn(summary_group, shift=UP * 0.15))
+        self.next_slide()
+        self._clear()
     def _slide_mcp_vs_cli(self):
         anchor = self._header("Problems MCP Solves That CLI Cannot")
 
@@ -1211,6 +1344,23 @@ class MCPPresentation(Slide):
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE 10 — MCP as Network Protocol  (SVG or fallback diagram)
     # ══════════════════════════════════════════════════════════════════════════
+    def _mcp_websites(self):
+        anchor = self._header("Where to find MCP's: mcp.so")
+
+        img_path = "mcp_website.png"
+        if os.path.exists(img_path):
+            img = (
+                ImageMobject(img_path)
+                .scale_to_fit_width(10)
+                .next_to(anchor, DOWN, buff=0.25)
+            )
+            self.play(FadeIn(img))
+        else:
+            self._draw_protocol_stack(anchor)
+
+        self.next_slide()
+        self._clear()
+
     def _slide_network_protocol(self):
         anchor = self._header("MCP is a Network Protocol over HTTP")
 
@@ -1241,6 +1391,101 @@ class MCPPresentation(Slide):
             self.play(FadeIn(img))
         else:
             self._draw_protocol_stack(anchor)
+
+        self.next_slide()
+        self._clear()
+    def _slide_mcp_flow(self):
+        anchor = self._header("MCP Protocol — Message Flow")
+
+        # ── column definitions ─────────────────────────────────────────────────
+        COL_LABELS = ["Client", "MCP Server", "LLM", "External\nData Source"]
+        COL_X      = [-5.1, -1.7,  1.7,  5.1]
+        HDR_Y      =  2.30
+        TOP_Y      =  2.00
+        BOT_Y      = -3.40
+
+        # ── headers ────────────────────────────────────────────────────────────
+        headers = []
+        for label, x in zip(COL_LABELS, COL_X):
+            box = RoundedRectangle(
+                corner_radius=0.13, width=2.35, height=0.62,
+                fill_color=PAMPAS, fill_opacity=1.0,
+                stroke_color=CRAIL, stroke_width=1.5,
+            ).set_x(x).set_y(HDR_Y)
+            txt = B(label, color=DARK, weight=BOLD, scale=0.42).move_to(box)
+            headers.append(VGroup(box, txt))
+
+        # ── lifelines ──────────────────────────────────────────────────────────
+        lifelines = [
+            DashedLine(
+                [x, TOP_Y, 0], [x, BOT_Y, 0],
+                color=CLOUDY, stroke_width=0.9, dash_length=0.10,
+            )
+            for x in COL_X
+        ]
+
+        self.play(LaggedStart(*[FadeIn(h) for h in headers], lag_ratio=0.18))
+        self.play(LaggedStart(*[Create(ll) for ll in lifelines], lag_ratio=0.12))
+        self.next_slide()
+
+        # ── message definitions ────────────────────────────────────────────────
+        # (from_col, to_col, label, is_return, is_internal)
+        messages = [
+            (0, 1, "1. Request available tools",       False, False),
+            (1, 0, "2. List of tools",                 True,  False),
+            (0, 2, "3. User query + tools info",        False, False),
+            (2, 0, "4. Instruct: use specific tool",    False, False),
+            (0, 2, "5. Execute tool internally",         False, True ),
+            (1, 3, "6. Request data",                   False, False),
+            (3, 1, "7. Data response",                  True,  False),
+            (1, 0, "8. Retrieved data",                 True,  False),
+            (0, 2, "9. User query + retrieved data",    False, False),
+            (2, 0, "10. Final response",                True,  False),
+        ]
+
+        MSG_Y0   =  1.60
+        MSG_STEP =  0.50
+        PAD      =  0.28   # gap between lifeline and arrow tip/tail
+
+        for i, (src, dst, label, is_return, is_internal) in enumerate(messages):
+            y  = MSG_Y0 - i * MSG_STEP
+            xs = COL_X[src]
+            xd = COL_X[dst]
+
+            # ── self-loop (internal execution) ─────────────────────────────────
+            if is_internal:
+                loop = CurvedArrow(
+                    start_point=[xs + 0.15, y + 0.18, 0],
+                    end_point  =[xs + 0.15, y - 0.18, 0],
+                    angle=-TAU / 4,
+                    color=ORANGE,
+                    stroke_width=1.5,
+                )
+                lbl = B(label, color=ORANGE, scale=0.33).next_to(loop, RIGHT, buff=0.08)
+                self.play(Create(loop), FadeIn(lbl), run_time=0.50)
+                continue
+
+            # ── directional arrow ──────────────────────────────────────────────
+            color = SEC if is_return else CRAIL
+            sign  = 1 if xd > xs else -1
+            x_from = xs + sign * PAD
+            x_to   = xd - sign * PAD
+
+            raw = Arrow(
+                [x_from, y, 0], [x_to, y, 0],
+                buff=0,
+                color=color,
+                stroke_width=1.8,
+                max_tip_length_to_length_ratio=0.07,
+            )
+            arr = DashedVMobject(raw, num_dashes=16) if is_return else raw
+
+            # label above the arrow, centered
+            mid_x = (x_from + x_to) / 2
+            lbl = B(label, color=color, scale=0.33)
+            lbl.move_to([mid_x, y + 0.17, 0])
+
+            self.play(Create(arr), FadeIn(lbl), run_time=0.42)
 
         self.next_slide()
         self._clear()
