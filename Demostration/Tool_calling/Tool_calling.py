@@ -236,10 +236,10 @@ if __name__ == "__main__":
     demo_queries = [
         'Write "Hello, World!" to a file called hello.txt.',
         "What is (144 / 12) + 7 * 3?",
-        "What's the weather like in Tokyo in Fahrenheit?",
+        "What's the weather like in Medellin in Fahrenheit?",
         "Convert 100 km to miles.",
         "Can you explain what an LLM is?",
-        "What is 2 + 2? Also, what's the weather in London?",
+        "What is 2 + 2? Also, what's the weather in Medellin?",
     ]
 
     for query in demo_queries:

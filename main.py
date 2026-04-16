@@ -123,9 +123,11 @@ class MCPPresentation(Slide):
         self._slide_title()
         self._slide_about_me()
         self._slide_what_is_mcp()
-        self._slide_mcp_engine()
         self._slide_mcp_adopters()
+        self._slide_claude_certification()
+        self._slide_mcp_engine()
         self._slide_why_tools()
+        #self._slide_tokenization_comparison()
         self._slide_strawberry()
         self._slide_ai_imo_win()
         self._slide_prompt_injection()
@@ -297,6 +299,22 @@ class MCPPresentation(Slide):
         self.next_slide()
         self._clear()
 
+    def _slide_claude_certification(self):
+        anchor = self._header("Claude Certification")
+
+        img_path = "Certification.jpeg"
+        if os.path.exists(img_path):
+            img = (
+                ImageMobject(img_path)
+                .scale_to_fit_width(10)
+                .next_to(anchor, DOWN, buff=0.25)
+            )
+            self.play(FadeIn(img))
+        else:
+            self._draw_protocol_stack(anchor)
+
+        self.next_slide()
+        self._clear()
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE 4 — MCP as an Engine
     # ══════════════════════════════════════════════════════════════════════════
@@ -511,7 +529,7 @@ class MCPPresentation(Slide):
         )
 
         solution = B(
-            "Solution tools engine like @tool of langchain \n teach the model to call functions!",
+            "",
             color=TERT,
             weight=BOLD,
             scale=0.55,
@@ -587,6 +605,222 @@ class MCPPresentation(Slide):
         self.next_slide()
         self._clear()
 
+
+    def _slide_tokenization_comparison(self):
+        # ── header ────────────────────────────────────────────────────────────
+        anchor = self._header("Tokenization")
+
+
+        # ── intro sentence ────────────────────────────────────────────────────
+        intro = (
+            B("How should we split text before feeding it to a model?", scale=0.52, color=SEC)
+            .next_to(anchor, DOWN, buff=0.35)
+        )
+        self.play(FadeIn(intro))
+        self.next_slide()
+
+        # ══════════════════════════════════════════════════════════════════════
+        # COLUMN LAYOUT  (3 columns side-by-side)
+        # ══════════════════════════════════════════════════════════════════════
+        col_w   = 4.0
+        col_gap = 0.35
+        col_h   = 4.8
+        top_y   = intro.get_bottom()[1] - 0.30
+
+        # ── column backgrounds ────────────────────────────────────────────────
+        def card(color: str, label: str, x_center: float) -> VGroup:
+            bg = RoundedRectangle(
+                corner_radius=0.2,
+                width=col_w,
+                height=col_h,
+                fill_color=color,
+                fill_opacity=0.07,
+                stroke_color=color,
+                stroke_width=1.8,
+            ).move_to([x_center, top_y - col_h / 2, 0])
+            title = (
+                Text(label, color=color, weight=BOLD)
+                .scale(0.55)
+                .move_to(bg.get_top() + DOWN * 0.38)
+            )
+            return VGroup(bg, title), bg, title
+
+        xs = [-col_w - col_gap, 0, col_w + col_gap]
+
+        word_card,  word_bg,  word_title  = card(SEC,    "🔤  Word Tokens",      xs[0])
+        char_card,  char_bg,  char_title  = card(CRAIL,  "🔡  Char Tokens",      xs[1])
+        bpe_card,   bpe_bg,   bpe_title   = card("#4A9A6E", "✨  BPE Tokens",     xs[2])
+
+        self.play(
+            FadeIn(word_card),
+            FadeIn(char_card),
+            FadeIn(bpe_card),
+        )
+        self.next_slide()
+
+        # ══════════════════════════════════════════════════════════════════════
+        # Helper: stack lines inside a column
+        # ══════════════════════════════════════════════════════════════════════
+        def column_content(
+            items: list[tuple[str, str]],   # (text, color)
+            ref_top: np.ndarray,
+            scale: float = 0.44,
+            spacing: float = 0.42,
+        ) -> VGroup:
+            group = VGroup()
+            cursor = ref_top + DOWN * 0.72
+            for text, color in items:
+                mob = Text(text, color=color).scale(scale).move_to(cursor, aligned_edge=LEFT)
+                mob.set_x(ref_top[0] - col_w / 2 + 0.22)
+                group.add(mob)
+                cursor = cursor + DOWN * spacing
+            return group
+
+        # ── WORD column ───────────────────────────────────────────────────────
+        word_example_label = (
+            B('"love programming"', scale=0.43, color=DARK)
+            .next_to(word_title, DOWN, buff=0.28)
+        )
+        word_tokens = VGroup(
+            pill("love",        SEC, w=2.1, h=0.52),
+            pill("programming", SEC, w=2.5, h=0.52),
+        ).arrange(DOWN, buff=0.14).next_to(word_example_label, DOWN, buff=0.18)
+
+        word_pros = column_content(
+            [
+                ("✓  Readable units", "#4A9A6E"),
+                ("✓  Preserves meaning", "#4A9A6E"),
+            ],
+            word_bg.get_top() + DOWN * (0.72 + 1.55),
+            scale=0.40,
+            spacing=0.38,
+        )
+        word_cons = column_content(
+            [
+                ("✗  Millions of vocab entries", CRAIL),
+                ('✗  "progrmming" → unknown', CRAIL),
+                ("✗  New slang / names break it", CRAIL),
+                ("✗  One model per language", CRAIL),
+            ],
+            word_bg.get_top() + DOWN * (0.72 + 2.45),
+            scale=0.38,
+            spacing=0.37,
+        )
+
+        self.play(FadeIn(word_example_label), FadeIn(word_tokens))
+        self.play(FadeIn(word_pros))
+        self.play(FadeIn(word_cons))
+        self.next_slide()
+
+        # ── CHAR column ───────────────────────────────────────────────────────
+        char_example_label = (
+            B('"love"', scale=0.43, color=DARK)
+            .next_to(char_title, DOWN, buff=0.28)
+        )
+        char_tokens = VGroup(*[
+            pill(ch, CRAIL, w=0.55, h=0.52) for ch in ["l", "o", "v", "e"]
+        ]).arrange(RIGHT, buff=0.08).next_to(char_example_label, DOWN, buff=0.18)
+
+        char_pros = column_content(
+            [
+                ("✓  Tiny vocabulary (~100)", "#4A9A6E"),
+                ("✓  Handles any word", "#4A9A6E"),
+            ],
+            char_bg.get_top() + DOWN * (0.72 + 1.55),
+            scale=0.40,
+            spacing=0.38,
+        )
+        char_cons = column_content(
+            [
+                ('✗  "programming" = 11 tokens', CRAIL),
+                ("✗  Very long sequences", CRAIL),
+                ("✗  Hard to learn meaning", CRAIL),
+                ("✗  Slow & memory hungry", CRAIL),
+            ],
+            char_bg.get_top() + DOWN * (0.72 + 2.45),
+            scale=0.38,
+            spacing=0.37,
+        )
+
+        self.play(FadeIn(char_example_label), FadeIn(char_tokens))
+        self.play(FadeIn(char_pros))
+        self.play(FadeIn(char_cons))
+        self.next_slide()
+
+        # ── BPE column ────────────────────────────────────────────────────────
+        GREEN = "#4A9A6E"
+
+        bpe_example_label = (
+            B('"programming"', scale=0.43, color=DARK)
+            .next_to(bpe_title, DOWN, buff=0.28)
+        )
+        bpe_tokens = VGroup(*[
+            pill(tok, GREEN, w=w, h=0.52)
+            for tok, w in [("pro", 0.80), ("gram", 0.92), ("ming", 0.92)]
+        ]).arrange(RIGHT, buff=0.08).next_to(bpe_example_label, DOWN, buff=0.18)
+
+        bpe_pros = column_content(
+            [
+                ("✓  Fixed, compact vocab", GREEN),
+                ("✓  Handles new words", GREEN),
+                ("✓  Robust to typos", GREEN),
+                ("✓  Works across languages", GREEN),
+            ],
+            bpe_bg.get_top() + DOWN * (0.72 + 1.55),
+            scale=0.40,
+            spacing=0.38,
+        )
+        bpe_cons = column_content(
+            [
+                ("~  Subwords need merging step", SEC),
+                ("~  Less intuitive than words", SEC),
+            ],
+            bpe_bg.get_top() + DOWN * (0.72 + 2.85),
+            scale=0.38,
+            spacing=0.37,
+        )
+
+        # ── highlight the winning column ──────────────────────────────────────
+        glow = RoundedRectangle(
+            corner_radius=0.22,
+            width=col_w + 0.18,
+            height=col_h + 0.18,
+            fill_color=GREEN,
+            fill_opacity=0.0,
+            stroke_color=GREEN,
+            stroke_width=3.5,
+        ).move_to(bpe_bg)
+
+        self.play(FadeIn(bpe_example_label), FadeIn(bpe_tokens))
+        self.play(FadeIn(bpe_pros))
+        self.play(FadeIn(bpe_cons))
+        self.play(Create(glow))
+        self.next_slide()
+
+        # ── bottom callout ────────────────────────────────────────────────────
+        callout_bg = RoundedRectangle(
+            corner_radius=0.15,
+            width=12.8,
+            height=0.72,
+            fill_color=GREEN,
+            fill_opacity=0.12,
+            stroke_color=GREEN,
+            stroke_width=1.5,
+        ).to_edge(DOWN, buff=0.22)
+
+        callout_txt = (
+            B(
+                "👉  BPE merges the most frequent pairs of characters iteratively — "
+                "balancing vocabulary size and sequence length.",
+                scale=0.46,
+                color=DARK,
+            )
+            .move_to(callout_bg)
+        )
+
+        self.play(FadeIn(callout_bg), FadeIn(callout_txt))
+        self.next_slide()
+        self._clear()
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE 7 — Strawberry / tokenisation
     # ══════════════════════════════════════════════════════════════════════════
@@ -1394,6 +1628,7 @@ class MCPPresentation(Slide):
 
         self.next_slide()
         self._clear()
+
     def _slide_mcp_flow(self):
         anchor = self._header("MCP Protocol — Message Flow")
 
@@ -1485,7 +1720,7 @@ class MCPPresentation(Slide):
             lbl = B(label, color=color, scale=0.33)
             lbl.move_to([mid_x, y + 0.17, 0])
 
-            self.play(Create(arr), FadeIn(lbl), run_time=0.42)
+            self.play(Create(arr), FadeIn(lbl), run_time=2.5)
 
         self.next_slide()
         self._clear()
