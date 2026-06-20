@@ -138,12 +138,12 @@ class MCPPresentation(Slide):
         self._slide_langchain_tool_intro()
         self._slide_langchain_tool_flow()
         self._slide_tools_problems()
-        self._slide_model_compat()
         self._slide_is_mcp_dead()
         self._slide_missinformation()
         self._slide_mcp_vs_skills()
         self._slide_mcp_vs_cli()
         self._slide_wolfram()
+        self._mcp_advatage_to_cli()
         self._mcp_websites()
         self._slide_network_protocol()
         self._slide_network_protocol_mcp()
@@ -331,9 +331,9 @@ class MCPPresentation(Slide):
         ]
         row2_data = [
             ("connect", CRAIL),
-            ("  to  ", DARK),
+            ("  with  ", DARK),
             ("external", SEC),
-            ("  through ", DARK),
+            ("  tools as  ", DARK),
             ("code functions", TERT),
         ]
 
@@ -426,11 +426,11 @@ class MCPPresentation(Slide):
 
         # ── Company / project data ───────────────────────────────────────────────
         companies = [
-            ("companies/c1.jpg", "GitHub", "Repos", CRAIL),
-            ("companies/c2.png", "Canva", "Desing", SEC),
-            ("companies/c3.jpg", "Figma", "Desing", TERT),
-            ("companies/c4.png", "Blender", "3D modeling", CLOUDY),
-            ("companies/c5.png", "Ghidra", "Reverse\n Engineer", DARK),
+            ("companies/c1.jpg", "GitHub", "Repositories", CRAIL),
+            ("companies/c2.png", "Canva", "Design", SEC),
+            ("companies/c3.jpg", "Figma", "Design", TERT),
+            ("companies/c4.png", "Blender", "3D Modeling", CLOUDY),
+            ("companies/c5.png", "Ghidra", "Reverse\nEngineering", DARK),
         ]
 
         IMG_W, IMG_H = 1.0, 1.0  # image bounding box
@@ -1441,83 +1441,6 @@ class MCPPresentation(Slide):
         self.next_slide()
         self._clear()
 
-    # ══════════════════════════════════════════════════════════════════════════
-    # SLIDE X — Not All Models Are Tool-Ready
-    # ══════════════════════════════════════════════════════════════════════════
-    def _slide_model_compat(self):
-        title = H("Not All Models Are Tool-Ready", scale=1.08).shift(UP * 2.6)
-
-        warning = B(
-            "⚠   Models handle tools in special ways — not every model supports them natively",
-            color=CRAIL,
-            scale=0.47,
-            weight=BOLD,
-        ).next_to(title, DOWN, buff=0.35)
-
-        # ── Capability ladder ──────────────────────────────────────────────────
-        steps = [
-            (TERT, "Structured\nOutput", "JSON / schema output"),
-            (SEC, "Tool / Function\nCalling", "Structured calls to functions"),
-            (CRAIL, "MCP", "Standard protocol layer"),
-        ]
-
-        box_groups = []
-        for color, main, _ in steps:
-            box = RoundedRectangle(
-                corner_radius=0.18,
-                width=2.85,
-                height=1.15,
-                color=color,
-                fill_color=color,
-                fill_opacity=0.13,
-                stroke_width=2,
-            )
-            lbl = B(main, color=color, weight=BOLD, scale=0.55).move_to(box)
-            box_groups.append(VGroup(box, lbl))
-
-        VGroup(*box_groups).arrange(RIGHT, buff=0.65).next_to(warning, DOWN, buff=0.6)
-
-        # sub-labels AFTER .arrange() so positions are final
-        sublabels = [
-            B(sub, color=CLOUDY, scale=0.36).next_to(bg, DOWN, buff=0.18)
-            for (_, _, sub), bg in zip(steps, box_groups)
-        ]
-
-        arrows = [
-            Arrow(
-                box_groups[i].get_right(),
-                box_groups[i + 1].get_left(),
-                color=CLOUDY,
-                buff=0.05,
-                stroke_width=2,
-                max_tip_length_to_length_ratio=0.18,
-            )
-            for i in range(len(box_groups) - 1)
-        ]
-
-        rule = B(
-            "Structured output  →  can handle tools  →  can handle MCP",
-            color=SEC,
-            scale=0.48,
-        ).next_to(VGroup(*sublabels), DOWN, buff=0.52)
-
-        # ── Animations ─────────────────────────────────────────────────────────
-        self.play(DrawBorderThenFill(title))
-        self.play(FadeIn(warning, shift=DOWN * 0.1))
-        self.play(
-            LaggedStart(
-                *[
-                    FadeIn(VGroup(bg, sl), shift=UP * 0.15)
-                    for bg, sl in zip(box_groups, sublabels)
-                ],
-                lag_ratio=0.38,
-            )
-        )
-        self.play(LaggedStart(*[GrowArrow(a) for a in arrows], lag_ratio=0.4))
-        self.play(FadeIn(rule, shift=UP * 0.18))
-        self.next_slide()
-        self._clear()
-
     def _slide_is_mcp_dead(self):
         anchor = self._header("Is MCP Dead?")
 
@@ -1723,7 +1646,7 @@ class MCPPresentation(Slide):
         anchor = self._header("Case Study: Wolfram Alpha")
 
         stmt = B(
-            "Wolfram Alpha has CLI (Unofficial) -  but they build MCP server also.",
+            "Wolfram Alpha has CLI  —  but it has an MCP server.",
             color=DARK,
             scale=0.65,
         )
@@ -1741,7 +1664,7 @@ class MCPPresentation(Slide):
             (SEC, "Structured output", "Returns LaTeX & JSON — not terminal text"),
             (
                 TERT,
-                "LLM needs schemas and Data",
+                "LLM needs schemas",
                 "MCP describes inputs/outputs so the LLM knows how to call it",
             ),
             (
@@ -1770,10 +1693,10 @@ class MCPPresentation(Slide):
         self.next_slide()
         self._clear()
 
-    def _slide_meme_ia_delete_meme(self):
-        anchor = self._header("One week ago")
+    def _mcp_advatage_to_cli(self):
+        anchor = self._header("If i were using MCP this not going to happen")
 
-        img_path = "memes/meme_shell.jpg"
+        img_path = "no_mcp_problem.jpeg"
         if os.path.exists(img_path):
             img = (
                 ImageMobject(img_path)
