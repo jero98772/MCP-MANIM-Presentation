@@ -1694,16 +1694,18 @@ class MCPPresentation(Slide):
         self._clear()
 
     def _mcp_advatage_to_cli(self):
-        anchor = self._header("If i were using MCP this not going to happen")
+        anchor = self._header("If I Were Using MCP, This Wouldn't Have Happened")
+        img1_path = "memes/delete_db.png"
+        img2_path = "memes/delete_driver.png"
 
-        img_path = "no_mcp_problem.jpeg"
-        if os.path.exists(img_path):
-            img = (
-                ImageMobject(img_path)
-                .scale_to_fit_width(10)
-                .next_to(anchor, DOWN, buff=0.25)
-            )
-            self.play(FadeIn(img))
+        if os.path.exists(img1_path) and os.path.exists(img2_path):
+            img1 = ImageMobject(img1_path).scale_to_fit_width(5.5)
+            img2 = ImageMobject(img2_path).scale_to_fit_width(5.5)
+
+            group = Group(img1, img2).arrange(RIGHT, buff=0.5)
+            group.next_to(anchor, DOWN, buff=0.25)
+
+            self.play(FadeIn(img1), FadeIn(img2))
         else:
             self._draw_protocol_stack(anchor)
 
