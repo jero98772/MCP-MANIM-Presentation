@@ -12,7 +12,8 @@ Export to HTML:
 from __future__ import annotations
 
 import os
-
+import qrcode
+from PIL import Image as PILImage
 from manim import *
 from manim import Code
 from manim_slides import Slide
@@ -37,6 +38,122 @@ MUTED = SEC
 # ── Tiny helpers ───────────────────────────────────────────────────────────────
 SUPPORTED_STYLES = set(get_all_styles())
 DEFAULT_STYLE = "monokai"
+
+GITHUB_URL = "https://github.com/jero98772"
+
+
+def _make_qr_png(url: str, filename: str = "github_qr.png") -> str:
+    """Generates a QR code PNG for *url* next to this file."""
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_H,
+        box_size=10,
+        border=2,
+    )
+    qr.add_data(url)
+    qr.make(fit=True)
+    img = qr.make_image(fill_color="black", back_color="white")
+    path = os.path.join(os.path.dirname(__file__), filename)
+    img.save(path)
+    return path
+
+
+# ── Helper: inline SVG paths for the GitHub logo (Manim SVGMobject) ───────────
+GITHUB_SVG = """
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <path d="M12 .297c-6.63 0-12 5.373-12 12 0 5.303
+           3.438 9.8 8.205 11.385.6.113.82-.258.82-.577
+           0-.285-.01-1.04-.015-2.04-3.338.724-4.042-1.61-4.042-1.61
+           C4.422 18.07 3.633 17.7 3.633 17.7c-1.087-.744.084-.729.084-.729
+           1.205.084 1.838 1.236 1.838 1.236 1.07 1.835 2.809 1.305
+           3.495.998.108-.776.417-1.305.76-1.605-2.665-.3-5.466-1.332-5.466-5.93
+           0-1.31.465-2.38 1.235-3.22-.135-.303-.54-1.523.105-3.176
+           0 0 1.005-.322 3.3 1.23.96-.267 1.98-.399 3-.405
+           1.02.006 2.04.138 3 .405 2.28-1.552 3.285-1.23 3.285-1.23
+           .645 1.653.24 2.873.12 3.176.765.84 1.23 1.91 1.23 3.22
+           0 4.61-2.805 5.625-5.475 5.92.42.36.81 1.096.81 2.22
+           0 1.606-.015 2.896-.015 3.286 0 .315.21.69.825.57
+           C20.565 22.092 24 17.592 24 12.297c0-6.627-5.373-12-12-12"/>
+</svg>
+"""
+
+# ── Helper: build a small flag from coloured rectangles ───────────────────────
+
+
+def _colombia_flag(width: float = 1.6, height: float = 1.0) -> VGroup:
+    """
+    Colombia flag: horizontal stripes yellow (½) / blue (¼) / red (¼)
+    (top-to-bottom order as it appears on the flag).
+    """
+    h_y = height * 0.50  # yellow band height
+    h_b = height * 0.25  # blue band height
+    h_r = height * 0.25  # red band height
+
+    yellow = Rectangle(
+        width=width, height=h_y, fill_color="#FCD116", fill_opacity=1, stroke_width=0
+    )
+    blue = Rectangle(
+        width=width, height=h_b, fill_color="#003893", fill_opacity=1, stroke_width=0
+    )
+    red = Rectangle(
+        width=width, height=h_r, fill_color="#CE1126", fill_opacity=1, stroke_width=0
+    )
+
+    blue.next_to(yellow, DOWN, buff=0)
+    red.next_to(blue, DOWN, buff=0)
+
+    flag = VGroup(yellow, blue, red)
+    flag.move_to(ORIGIN)
+    return flag
+
+
+def _belarus_flag(width: float = 1.6, height: float = 1.0) -> VGroup:
+    """
+    Belarus flag: red (2/3) over green (1/3) with a narrow white+ornament
+    stripe on the hoist side (simplified as a white stripe).
+    """
+    h_r = height * (2 / 3)
+    h_g = height * (1 / 3)
+    ornament_w = width * 0.12
+
+    red = Rectangle(
+        width=width - ornament_w,
+        height=h_r,
+        fill_color="#CF101A",
+        fill_opacity=1,
+        stroke_width=0,
+    )
+    green = Rectangle(
+        width=width - ornament_w,
+        height=h_g,
+        fill_color="#009A44",
+        fill_opacity=1,
+        stroke_width=0,
+    )
+    green.next_to(red, DOWN, buff=0)
+
+    # Hoist ornament column (white + red pattern, simplified as two rects)
+    orn_white = Rectangle(
+        width=ornament_w,
+        height=h_r * 0.15,
+        fill_color=WHITE,
+        fill_opacity=1,
+        stroke_width=0,
+    )
+    orn_red = Rectangle(
+        width=ornament_w,
+        height=h_r * 0.85 + h_g,
+        fill_color="#CF101A",
+        fill_opacity=1,
+        stroke_width=0,
+    )
+    orn_red.next_to(orn_white, DOWN, buff=0)
+    ornament = VGroup(orn_white, orn_red)
+    ornament.next_to(red, LEFT, buff=0).align_to(red, UP)
+
+    flag = VGroup(red, green, ornament)
+    flag.move_to(ORIGIN)
+    return flag
 
 
 def H(text: str, scale: float = 1.0, color: str = DARK, **kw) -> Text:
@@ -1994,17 +2111,78 @@ class MCPPresentation(Slide):
 
     # ══════════════════════════════════════════════════════════════════════════
     # SLIDE 13 —  Thank you
-    # ══════════════════════════════════════════════════════════════════════════
+    # ═════════════════════════════════════════════════════════════════════════
+
     def _slide_thanks(self):
-        title = H("Thank You!", scale=1.15, color=CRAIL).shift(UP * 1.2)
-        line = Line(LEFT * 5, RIGHT * 5, color=CLOUDY, stroke_width=1).next_to(
-            title, DOWN, buff=0.6
+        # ── 1. Titles ──────────────────────────────────────────────────────────
+        title_en = Text("Thank You!", color=CRAIL, weight=BOLD).scale(1.10)
+        title_ru = Text("Спасибо!  ❤", color=CRAIL, weight=BOLD).scale(0.82)
+        titles = VGroup(title_en, title_ru).arrange(DOWN, buff=0.18)
+
+        # ── 2. Divider ─────────────────────────────────────────────────────────
+        line = Line(LEFT * 5.5, RIGHT * 5.5, color=CLOUDY, stroke_width=1)
+
+        # ── 3. Flags ───────────────────────────────────────────────────────────
+        flag_col = _colombia_flag(width=1.4, height=0.84)
+        flag_bel = _belarus_flag(width=1.4, height=0.84)
+        flag_col_label = Text("Colombia", color=SEC, weight=BOLD).scale(0.36)
+        flag_bel_label = Text("Беларусь", color=SEC, weight=BOLD).scale(0.36)
+        col_group = VGroup(flag_col, flag_col_label).arrange(DOWN, buff=0.12)
+        bel_group = VGroup(flag_bel, flag_bel_label).arrange(DOWN, buff=0.12)
+        flags = VGroup(col_group, bel_group).arrange(RIGHT, buff=2.2)
+
+        # ── 4. GitHub section ──────────────────────────────────────────────────
+        qr_path = _make_qr_png(GITHUB_URL, "github_qr.png")
+        qr_img = ImageMobject(qr_path).scale_to_fit_height(1.45)
+
+        github_logo_svg = os.path.join(
+            os.path.dirname(__file__), "_github_logo_tmp.svg"
+        )
+        with open(github_logo_svg, "w") as f:
+            f.write(GITHUB_SVG)
+        gh_logo = SVGMobject(github_logo_svg).scale(0.36)
+        gh_logo.set_fill(DARK, opacity=1).set_stroke(width=0)
+
+        handle = Text("@jero98772", color=DARK, weight=BOLD).scale(0.52)
+        gh_url = Text("github.com/jero98772", color=SEC).scale(0.40)
+
+        # Stack logo + handle + url, then put QR to their left
+        gh_text = VGroup(gh_logo, handle, gh_url).arrange(DOWN, buff=0.14)
+        qr_img.next_to(gh_text, LEFT, buff=0.40)
+        qr_img.align_to(gh_text, UP)
+        github_section = Group(qr_img, gh_text)
+
+        # ── 5. Chain layout top-to-bottom with explicit positioning ───────────────
+        titles.to_edge(UP, buff=0.55)
+        line.next_to(titles, DOWN, buff=0.35)
+        flags.next_to(line, DOWN, buff=0.45)
+        flags.center()
+
+        # Place github_section strictly below the lowest point of the flags row,
+        # using get_bottom() so the QR never overlaps the flags regardless of
+        # how wide the bounding boxes are.
+        flags_bottom_y = flags.get_bottom()[1]
+        github_section.center()  # centre horizontally
+        github_section.set_y(
+            flags_bottom_y
+            - 0.90  # 0.90 units of clear gap
+            - github_section.get_height() / 2
         )
 
-        qr_label = B("Questions?", color=SEC, weight=BOLD, scale=0.7).next_to(
-            line, DOWN, buff=0.55
-        )
-        self.play(DrawBorderThenFill(title))
+        # Safety: nudge everything up if github_section clips the bottom edge
+        all_objects = Group(titles, line, flags, github_section)
+        bottom_y = all_objects.get_bottom()[1]
+        margin = -config.frame_height / 2 + 0.25
+        if bottom_y < margin:
+            all_objects.shift(UP * (margin - bottom_y))
+
+        # ── 6. Animations ──────────────────────────────────────────────────────
+        self.play(DrawBorderThenFill(title_en))
+        self.play(FadeIn(title_ru, shift=UP * 0.15))
         self.play(Create(line))
-        self.play(FadeIn(qr_label, shift=UP * 0.2))
+        self.play(
+            FadeIn(col_group, shift=RIGHT * 0.4),
+            FadeIn(bel_group, shift=LEFT * 0.4),
+        )
+        self.play(FadeIn(github_section, shift=UP * 0.2))
         self.next_slide()
